@@ -1,3 +1,4 @@
+import DashNav from '@/components/ui/nav/DashNav'
 import SideBar from '@/components/ui/space/SideBar'
 import { ReactNode } from 'react'
 
@@ -14,9 +15,9 @@ export default function Layout({ children }: SidebarLayoutProps) {
             <SideBar/>
         </div>
       </aside>
-      
       {/* Main content area */}
       <main className="flex-1 overflow-x-hidden overflow-y-auto">
+        <DashNav profileUrl="https://github.com/shadcn.png" name='gemo'/>
         <div className="container mx-auto px-6 py-8">
           {children}
         </div>
