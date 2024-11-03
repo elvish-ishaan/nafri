@@ -1,0 +1,1 @@
+export const mainPara = "An all-in-one cloud storage solution for seamless file sharing, collaboration, and secure data management across any device, anytime, anywhere."
