@@ -1,0 +1,3 @@
+fix all the issue with rendering files of user
+fix auth issue 
+add dev mode feature

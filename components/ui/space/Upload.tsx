@@ -5,13 +5,14 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Plus } from 'lucide-react';
 import { Modal } from './Modal';
 import { uploadFileAws } from '@/app/actions/uploads';
+import { useToast } from '@/hooks/use-toast';
 
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const { toast } = useToast()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -24,12 +25,22 @@ const UploadBtn: React.FC = () => {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     console.log('Uploading file...', fileUpload);
+    const formData = new FormData()
+    formData.append('file', fileUpload)        //fix this 
     try {
-      uploadFileAws(fileUpload)
+      const upload = await uploadFileAws(formData)
+      if(upload?.success){
+        toast({
+          title: 'uploaded successfully',
+        })
+      }
     } catch (error) {
       console.log(error,'error in uploading')
+      toast({
+        title:'hello'
+      })
     }
     setShowUploadModal(false);
   };
@@ -72,7 +83,7 @@ const UploadBtn: React.FC = () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {uploadStatus && <p className="mt-2 text-sm text-gray-600">{uploadStatus}</p>}
+      {/* {uploadStatus && <p className="mt-2 text-sm text-gray-600">{uploadStatus}</p>} */}
     </div>
   );
 };
