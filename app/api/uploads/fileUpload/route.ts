@@ -1,10 +1,10 @@
-"use server"
 import { Bucket, s3 } from "@/app/configs/awsConfig";
 import prisma from "@/prisma/prismaClient";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from 'uuid';
 
-export const uploadFileAws = async (file: File) => {
+export const uploadFileAws = async (file: File | null) => {
+  console.log(file,'getting file in actions')
     if (!file) return;
     const ext = file?.name.split(".").at(-1);
     const uid = uuidv4().split('-')
@@ -44,4 +44,9 @@ export const uploadFileAws = async (file: File) => {
       console.error(error);
       throw new Error("Something went wrong in uploading to aws")
     }
+}
+
+export const POST = async () => {
+    //fix authentication first
+
 }

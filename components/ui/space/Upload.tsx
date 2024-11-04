@@ -1,48 +1,60 @@
+"use client"
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Plus } from 'lucide-react';
+import { Modal } from './Modal';
+import { uploadFileAws } from '@/app/actions/uploads';
 
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    
-    if (!file) {
-      console.log('No file selected');  // Logs if no file is selected
-      return;
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFileUpload(selectedFile);
+    setShowUploadModal(true);
 
-    setUploadStatus('Uploading...');
-    console.log('File change detected:', file);
-
-    try {
-      await uploadFile(file);  // Simulate file upload
-      setUploadStatus('Upload successful!');
-    } catch (error) {
-      setUploadStatus('Upload failed.');
-      console.error('Upload failed', error);
+    // Reset file input so onChange triggers on selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const uploadFile = async (file: File) => {
-    // Simulate a delay for upload
-    console.log('Uploading:', file.name);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log(`${file.name} uploaded successfully`);
+  const handleUpload = () => {
+    console.log('Uploading file...', fileUpload);
+    try {
+      uploadFileAws(fileUpload)
+    } catch (error) {
+      console.log(error,'error in uploading')
+    }
+    setShowUploadModal(false);
   };
 
   return (
     <div className="relative inline-block">
+      {showUploadModal && (
+        <Modal
+          title="Choose File To Upload"
+          description="choose file you want to upload to the cloud"
+          open={showUploadModal}
+          onClickFn={handleUpload}
+          footerBtn="Upload"
+        >
+          <div>
+            <input type="file" onChange={handleFileChange} />
+          </div>
+        </Modal>
+      )}
       <TooltipProvider>
         <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
           <TooltipTrigger asChild>
             <Button onClick={() => setShowTooltip(!showTooltip)} variant="secondary">
-              <span className='text-green-600 text-xl'><Plus /></span>
-              <span className='text-xl'>Upload</span>
+              <span className="text-green-600 text-xl"><Plus /></span>
+              <span className="text-xl">Upload</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right" align="center" className="p-2 w-48 shadow-lg rounded">
@@ -50,16 +62,10 @@ const UploadBtn: React.FC = () => {
               <li
                 className="px-4 py-2 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => {
-                  fileInputRef.current?.click();
+                  setShowUploadModal(true)
                   setShowTooltip(false);
                 }}
               >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }}
-                />
                 File Upload
               </li>
             </ul>
