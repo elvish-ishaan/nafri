@@ -1,46 +1,56 @@
 "use client"
-import { fetchSignedUrl } from "@/app/actions/uploads";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
 import { HardDrive } from "lucide-react";
 import { useState } from "react";
+import { fetchSignedUrl } from "@/app/actions/uploads";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
 import { FileModal } from "./FileModal";
-  
-  interface FileMetaData {
-    id: string;
-    fileKey: string; // Name of the file (can be derived from fileKey)
-    uploadDate: string; // Date of upload (mapped from uploadDate)
-    userEmail: string; // Owner's email (mapped from userEmail)
-  }
-  
-  export function UploadsTable({ filesData }: any) {
-    const { toast} = useToast()       //fix this type
-    const [showModal, setShowModal] = useState<boolean>(false)
-    let fileUrl: any;
-    const handleViewClk = async(fileUrl: string) => {
-      try {
-        fileUrl = await fetchSignedUrl(fileUrl) || null
-        setShowModal(true)
-      } catch (error) {
-        console.log(error,'error in fetching signed url')
-        toast({
-          title: 'Cant load file',
-          variant: 'destructive'
-        })
-      }
+import { format } from "date-fns"; // date-fns for formatting
+
+interface FileMetaData {
+  id: string;
+  fileKey: string;
+  uploadDate: string;
+  userEmail: string;
+}
+
+export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
+  const { toast } = useToast();
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<FileMetaData | null>(null);
+
+  const handleViewClk = async (fileKey: string) => {
+    try {
+      const url = await fetchSignedUrl(fileKey);
+      setFileUrl(url || null);
+      setSelectedFile(filesData.find((file) => file.fileKey === fileKey) || null);
+      setShowModal(true);
+    } catch (error) {
+      console.error("Error fetching signed URL:", error);
+      toast({
+        title: "Can't load file",
+        variant: "destructive",
+      });
     }
-    return (
+  };
+
+  return (
+    <>
+      {showModal && selectedFile && (
+        <FileModal open={showModal} fileDetails={selectedFile} fileUrl={fileUrl || ""} />
+      )}
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead >Name</TableHead>
+            <TableHead>Name</TableHead>
             <TableHead>Uploaded On</TableHead>
             <TableHead>Owner</TableHead>
             <TableHead>Location</TableHead>
@@ -54,24 +64,22 @@ import { FileModal } from "./FileModal";
               </TableCell>
             </TableRow>
           ) : (
-            filesData?.map((metaData: FileMetaData) => (
-              <div key={metaData.id}>
-                showModal && <FileModal open={showModal} fileDetails={metaData} fileUrl={fileUrl}/>
+            filesData?.map((metaData) => (
               <TableRow key={metaData.id} onDoubleClick={() => handleViewClk(metaData.fileKey)}>
                 <TableCell className="font-medium">{metaData.fileKey}</TableCell>
-                <TableCell>{new Date(metaData.uploadDate).toLocaleString()}</TableCell>
+                <TableCell>{format(new Date(metaData.uploadDate), "MM/dd/yyyy, hh:mm:ss a")}</TableCell>
                 <TableCell>{metaData.userEmail}</TableCell>
-                <TableCell className=" text-right">
-                  <div className=" flex gap-3">
-                    <span><HardDrive/></span>Disk
+                <TableCell className="text-right">
+                  <div className="flex gap-3">
+                    <HardDrive />
+                    <span>Disk</span>
                   </div>
                 </TableCell>
               </TableRow>
-              </div>
             ))
           )}
         </TableBody>
       </Table>
-    );
-  }
-  
+    </>
+  );
+}

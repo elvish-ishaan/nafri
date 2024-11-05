@@ -12,6 +12,7 @@ const UploadBtn: React.FC = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [uploadLoading, setUploadLoading] = useState<boolean>(false)
   const { toast } = useToast()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,11 +27,12 @@ const UploadBtn: React.FC = () => {
   };
 
   const handleUpload = async () => {
-    console.log('Uploading file...', fileUpload);
     const formData = new FormData()
     formData.append('file', fileUpload)        //fix this 
     try {
+      setUploadLoading(true)
       const upload = await uploadFileAws(formData)
+      setUploadLoading(false)
       if(upload?.success){
         toast({
           title: 'uploaded successfully',
@@ -39,7 +41,8 @@ const UploadBtn: React.FC = () => {
     } catch (error) {
       console.log(error,'error in uploading')
       toast({
-        title:'hello'
+        title:'sorry cant upload file',
+        variant: 'destructive'
       })
     }
     setShowUploadModal(false);
@@ -52,8 +55,8 @@ const UploadBtn: React.FC = () => {
           title="Choose File To Upload"
           description="choose file you want to upload to the cloud"
           open={showUploadModal}
-          onClickFn={handleUpload}
-          footerBtn="Upload"
+          onClickFn={ uploadLoading ? ()=>{} : handleUpload}
+          footerBtn={ uploadLoading ? 'Loading' : 'Upload'}
         >
           <div>
             <input type="file" onChange={handleFileChange} />

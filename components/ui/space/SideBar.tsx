@@ -6,6 +6,7 @@ import UploadBtn from './Upload';
 import StorageCells from './StorageCells';
 import { Separator } from '../separator';
 import { Button } from '../button';
+import { signOut } from 'next-auth/react';
 
 const links = [
   { title: 'My Space', path: '/my-space', icon: Home },
@@ -62,7 +63,7 @@ export default function SideBar() {
         </div>
         <div>
           <button
-            onClick={() => console.log('Logout clicked')}
+            onClick={() => signOut()}
             className="flex items-center w-full px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground hover:text-white transition-colors"
           >
             <LogOut className="mr-3 h-5 w-5" />

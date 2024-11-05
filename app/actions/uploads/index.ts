@@ -5,6 +5,7 @@ import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from 'uuid';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { contentType } from "@/lib/contentTypes";
 
 
 export const uploadFileAws = async (formData: FormData) => {
@@ -19,17 +20,19 @@ export const uploadFileAws = async (formData: FormData) => {
     if (!file) return;
     const ext = file?.name.split(".").at(-1);
     const uid = uuidv4().split('-')
-    const fileName = `${uid[0]}${ext ? "." + ext : ""}`;
+    const fileName = `${uid[0]}${ext ? "." + ext : ""}`
      
     try {
       try {
+        //get the extension of the uploaded file
+        const fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
         //conver file to buffer before uploading
         const fileBuffer = Buffer.from(await file.arrayBuffer());
         const uploadToS3 = new PutObjectCommand({
             Bucket,
             Key: fileName,
             Body: fileBuffer,
-            ContentType:"image/jpeg"
+            ContentType: contentType[fileExtension] || 'application/octet-stream' // Default to binary data
           });
           await s3.send(uploadToS3);
       } catch (error) {
@@ -91,6 +94,11 @@ export const fetchAllUploads = async () => {
 }
 
 export const fetchSignedUrl = async (fileKey: string) => {
+  //authentication check
+  const session = await getServerSession()
+  if(!session){
+    throw new Error("user unauthenticated")
+  }
   if(!fileKey){
     throw new Error('filekey is missing')
   }
