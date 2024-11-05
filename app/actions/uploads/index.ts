@@ -76,36 +76,37 @@ export const fetchAllUploads = async () => {
     if(!uploadsMetaData || uploadsMetaData.length == 0){
       throw new Error("No uploads found")
     }
-    try {
-      // Use Promise.all to handle the async operations
-      const allSignedUrls = await Promise.all(uploadsMetaData.map(async (upload) => {
-        // Create a command for getting the object
-        const command = new GetObjectCommand({
-          Bucket,
-          Key: upload.fileKey || ''
-        });
-   
-        // Get the pre-signed URL
-        const signedUrl = await getSignedUrl(s3, command);
-        console.log(signedUrl, 'this is signed url mapping....');
-        return signedUrl || null; // Return null if signedUrl is undefined
-      }));
-
-      console.log(allSignedUrls, 'these are all signed urls');
-      return {
-        success: true,
-        message: 'Fetched all uploads with signed URL',
-        uploads: {
-          uploadsMetaData,
-          allSignedUrls
-        }
-      };
-    } catch (error) {
-      console.log(error, 'can\'t get signed urls');
-      throw new Error('Can\'t fetch upload URLs');
-    }
+    //return res
+    return {
+      success: true,
+      message: 'Fetched all uploads with signed URL',
+      uploads: {
+        uploadsMetaData,          //optimise this in simple reutrn uploadmetadata directly
+      }
+    };
   } catch (error) {
     console.log(error,'error in fetching uplods')
     throw new Error('cant fetch uploads')
+  }
+}
+
+export const fetchSignedUrl = async (fileKey: string) => {
+  if(!fileKey){
+    throw new Error('filekey is missing')
+  }
+  try {
+      // Create a command for getting the object
+      const command = new GetObjectCommand({
+        Bucket,
+        Key: fileKey || ''
+      });
+ 
+      // Get the pre-signed URL
+      const signedUrl = await getSignedUrl(s3, command);
+      console.log(signedUrl, 'this is signed url mapping....');
+      return signedUrl || null; // Return null if signedUrl is undefined    
+  } catch (error) {
+    console.log(error, 'can\'t get signed urls');
+    throw new Error('Can\'t fetch upload URLs');
   }
 }

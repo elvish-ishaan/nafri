@@ -1,3 +1,5 @@
+"use client"
+import { fetchSignedUrl } from "@/app/actions/uploads";
 import {
     Table,
     TableBody,
@@ -6,28 +8,42 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { HardDrive } from "lucide-react";
+import { useState } from "react";
+import { FileModal } from "./FileModal";
   
   interface FileMetaData {
     id: string;
-    name: string; // Name of the file (can be derived from fileKey)
-    uploadedOn: string; // Date of upload (mapped from uploadDate)
-    owner: string; // Owner's email (mapped from userEmail)
-    location: string; // Location (could be a link to the file)
+    fileKey: string; // Name of the file (can be derived from fileKey)
+    uploadDate: string; // Date of upload (mapped from uploadDate)
+    userEmail: string; // Owner's email (mapped from userEmail)
   }
   
-  interface UploadsTableProps {
-    filesData: FileMetaData[] | undefined; // filesData is required
-  }
-  
-  export function UploadsTable({ filesData }: UploadsTableProps) {
+  export function UploadsTable({ filesData }: any) {
+    const { toast} = useToast()       //fix this type
+    const [showModal, setShowModal] = useState<boolean>(false)
+    let fileUrl: any;
+    const handleViewClk = async(fileUrl: string) => {
+      try {
+        fileUrl = await fetchSignedUrl(fileUrl) || null
+        setShowModal(true)
+      } catch (error) {
+        console.log(error,'error in fetching signed url')
+        toast({
+          title: 'Cant load file',
+          variant: 'destructive'
+        })
+      }
+    }
     return (
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Name</TableHead>
+            <TableHead >Name</TableHead>
             <TableHead>Uploaded On</TableHead>
             <TableHead>Owner</TableHead>
-            <TableHead className="text-right">Location</TableHead>
+            <TableHead>Location</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -38,17 +54,20 @@ import {
               </TableCell>
             </TableRow>
           ) : (
-            filesData?.map((fileData) => (
-              <TableRow key={fileData.id}>
-                <TableCell className="font-medium">{fileData.name}</TableCell>
-                <TableCell>{new Date(fileData.uploadedOn).toLocaleString()}</TableCell>
-                <TableCell>{fileData.owner}</TableCell>
-                <TableCell className="text-right">
-                  <a href={fileData.location} target="_blank" rel="noopener noreferrer">
-                    View
-                  </a>
+            filesData?.map((metaData: FileMetaData) => (
+              <div key={metaData.id}>
+                showModal && <FileModal open={showModal} fileDetails={metaData} fileUrl={fileUrl}/>
+              <TableRow key={metaData.id} onDoubleClick={() => handleViewClk(metaData.fileKey)}>
+                <TableCell className="font-medium">{metaData.fileKey}</TableCell>
+                <TableCell>{new Date(metaData.uploadDate).toLocaleString()}</TableCell>
+                <TableCell>{metaData.userEmail}</TableCell>
+                <TableCell className=" text-right">
+                  <div className=" flex gap-3">
+                    <span><HardDrive/></span>Disk
+                  </div>
                 </TableCell>
               </TableRow>
+              </div>
             ))
           )}
         </TableBody>
