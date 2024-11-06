@@ -25,16 +25,14 @@ export const uploadFileAws = async (formData: FormData) => {
     //check storage operation like is user able to upload according to his assingned storage
       const user = await prisma.user.findUnique({
         where: {
-          email: session.user?.email || ''
+          //fix with actual session.user?.email || ''
+          email: 'user1@example.com'
         }
       });
 
-      if(!user){
-        throw new Error("user not found")
-      }
       //compare storage
-      const expectedStorage = user?.currentSpace + file.size
-      if( expectedStorage > user?.totalSpace ) {
+      const expectedStorage = Number(user?.currentSpace) + file.size;
+      if( expectedStorage > Number( user?.totalSpace) ) {
         throw new Error("File Size Exceeds Your Current Space")
       }
     try {
@@ -71,7 +69,8 @@ export const uploadFileAws = async (formData: FormData) => {
           // Update user storage
           prisma.user.update({
             where: {
-              email: session.user?.email || '',
+              //fix session.user.email || ''
+              email: 'user1@example.com',
             },
             data: {
               currentSpace: {

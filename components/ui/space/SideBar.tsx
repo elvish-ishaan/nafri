@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Home, Clock, Star, Share2, Trash2, Settings, LogOut, Cloud } from 'lucide-react';
 import UploadBtn from './Upload';
 import StorageCells from './StorageCells';
 import { Separator } from '../separator';
 import { Button } from '../button';
 import { signOut } from 'next-auth/react';
+import { fetchUserData } from '@/app/actions/user';
 
 const links = [
   { title: 'My Space', path: '/my-space', icon: Home },
@@ -16,7 +17,41 @@ const links = [
   { title: 'Bin', path: '/bin', icon: Trash2 },
 ];
 
+
+
+//byte conversion 
+const convertSpace = (bytes: bigint, size: "GB" | "MB" | "KB"): number => {
+  const numBytes = Number(bytes);
+  switch (size) {
+    case "GB":
+      return numBytes / (1024 ** 3);
+    case "MB":
+      return numBytes / (1024 ** 2);
+    case "KB":
+      return numBytes / 1024;
+    default:
+      throw new Error("Invalid size. Use 'GB', 'MB', or 'KB'.");
+  }
+};
+
+
 export default function SideBar() {
+  const [ userData, setUserData] = useState<any | null>(null)
+
+  useEffect(() => {
+   try {
+    //fetch user
+    const fetchUser = async () => {
+      const userData = await fetchUserData()
+      console.log(userData.user,'user inside call')
+      setUserData(userData.user)
+    }
+    //call func
+    fetchUser()
+   } catch (error) {
+    console.log(error,'cant get user data')
+   }
+  },[])
   return (
     <div className="flex h-screen flex-col text-foreground w-64 border-foreground-muted border-r-2">
       {/* Sidebar Header */}
@@ -47,7 +82,7 @@ export default function SideBar() {
               <Cloud/><span >Storage</span>
            </div>
             <div className=' px-1 mt-3 flex flex-col justify-between'>
-               <StorageCells value={15} outOf={20}/>
+               <StorageCells value={ convertSpace(userData?.currentSpace, 'GB') } outOf={ convertSpace(userData?.currentSpace, 'GB') }/>
                <Button variant={'outline'}>Upgrade</Button>
             </div>
         </div>

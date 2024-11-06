@@ -1,2 +1,2 @@
-add func of storage 
+fix storage cell rending issue
 add dev mode feature
