@@ -10,10 +10,13 @@ import {
 import Image from "next/image";
 import React from "react";
 import { Separator } from "../separator";
+import ReactPlayer from 'react-player'
+
 
 export function FileModal({ open,fileDetails,fileUrl }: {open: boolean, fileUrl: string, fileDetails:{
   fileKey: string,
   userEmail: string,
+  fileType: string,
   id: string,
   uploadDate: string
 }}) {
@@ -35,7 +38,16 @@ export function FileModal({ open,fileDetails,fileUrl }: {open: boolean, fileUrl:
         </DialogHeader>
         <Separator/>
         <div className=" w-full flex justify-center items-center">
-           <Image src={fileUrl} height={200} width={200} alt="helo"/>
+        {
+          fileDetails?.fileType === 'jpg' && (
+            <Image src={fileUrl} height={200} width={200} alt="hello" />
+          )
+        }
+        {
+          fileDetails?.fileType === 'mp4' && (
+            <ReactPlayer url={fileUrl} controls={true}/>
+          )
+        }
         </div>
       </DialogContent>
     </Dialog>

@@ -31,20 +31,24 @@ async function main() {
       {
         fileKey: 'user1-file1.jpg',
         uploadDate: new Date().toISOString(),
+        fileType: 'jpg',
         userEmail: user1.email,
       },
       {
         fileKey: 'user1-file2.jpg',
         uploadDate: new Date().toISOString(),
+        fileType: 'jpg',
         userEmail: user1.email,
       },
       {
         fileKey: 'dev-file1.jpg',
         uploadDate: new Date().toISOString(),
+        fileType: 'jpg',
         userEmail: devUser.email,
       },
     ],
   });
+  console.log('seed has been added to db')
 }
 
 main()

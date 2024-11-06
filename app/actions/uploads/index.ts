@@ -11,7 +11,7 @@ import { contentType } from "@/lib/contentTypes";
 export const uploadFileAws = async (formData: FormData) => {
     //check auth
     const session = await getServerSession()
-    console.log(session?.user,'this is server session user data....')
+
     if(!session){
         throw new Error('Unauthorised user')
     }
@@ -21,11 +21,27 @@ export const uploadFileAws = async (formData: FormData) => {
     const ext = file?.name.split(".").at(-1);
     const uid = uuidv4().split('-')
     const fileName = `${uid[0]}${ext ? "." + ext : ""}`
-     
+
+    //check storage operation like is user able to upload according to his assingned storage
+      const user = await prisma.user.findUnique({
+        where: {
+          email: session.user?.email || ''
+        }
+      });
+
+      if(!user){
+        throw new Error("user not found")
+      }
+      //compare storage
+      const expectedStorage = user?.currentSpace + file.size
+      if( expectedStorage > user?.totalSpace ) {
+        throw new Error("File Size Exceeds Your Current Space")
+      }
     try {
+      let fileExtension:(string | undefined)
       try {
         //get the extension of the uploaded file
-        const fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
+         fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
         //conver file to buffer before uploading
         const fileBuffer = Buffer.from(await file.arrayBuffer());
         const uploadToS3 = new PutObjectCommand({
@@ -41,13 +57,29 @@ export const uploadFileAws = async (formData: FormData) => {
       }
       //save metadata to database
       try {
-           await prisma.uploads.create({
+        await prisma.$transaction([
+          // Create file upload entry
+          prisma.uploads.create({
             data: {
-                fileKey: fileName,
-                uploadDate: new Date().toISOString(),
-                userEmail: 'user1@example.com'
-            }
-        })
+              fileKey: fileName,
+              uploadDate: new Date().toISOString(),
+              fileType: fileExtension,
+              userEmail: 'user1@example.com',
+            },
+          }),
+        
+          // Update user storage
+          prisma.user.update({
+            where: {
+              email: session.user?.email || '',
+            },
+            data: {
+              currentSpace: {
+                increment: file.size, 
+              },
+            },
+          }),
+        ]);
         return {
             success: true,
             message: "uploaded successfully"

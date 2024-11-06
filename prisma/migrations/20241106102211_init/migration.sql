@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "currentSpace" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "totalSpace" INTEGER NOT NULL DEFAULT 20;

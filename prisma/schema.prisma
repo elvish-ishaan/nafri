@@ -13,12 +13,15 @@ model User {
   email String  @unique
   name  String?
   uploads Uploads[]
+  currentSpace  BigInt @default(0)
+  totalSpace  BigInt   @default(21474836480)
   role  Roles  @default(USER)
 }
 
 model Uploads {
   id        String @id @default(uuid())
-  fileKey   String?
+  fileKey   String
+  fileType  String
   uploadDate String 
   user      User    @relation(fields: [userEmail], references: [email])
   userEmail  String

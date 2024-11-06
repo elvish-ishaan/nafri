@@ -1,3 +1,2 @@
-add the feature of running videos and opening pdfs in filemodal
 add func of storage 
 add dev mode feature
