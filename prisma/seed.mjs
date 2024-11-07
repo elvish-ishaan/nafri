@@ -33,18 +33,21 @@ async function main() {
         uploadDate: new Date().toISOString(),
         fileType: 'jpg',
         userEmail: user1.email,
+        starred: false
       },
       {
         fileKey: 'user1-file2.jpg',
         uploadDate: new Date().toISOString(),
         fileType: 'jpg',
         userEmail: user1.email,
+        starred: false
       },
       {
         fileKey: 'dev-file1.jpg',
         uploadDate: new Date().toISOString(),
         fileType: 'jpg',
         userEmail: devUser.email,
+        starred: true
       },
     ],
   });

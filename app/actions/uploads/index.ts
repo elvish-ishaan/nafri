@@ -152,15 +152,28 @@ export const fetchSignedUrl = async (fileKey: string) => {
 
 
 //add to starred 
-// const addToStarred = async () => {
-//   //check auth
-//   const session = await getServerSession()
-//   if(!session){
-//     throw new Error('user not authenticated')
-//   }
-//   try {
-    
-//   } catch (error) {
-//     console.log()
-//   }
-// }
+export const addToStarred = async (fileId: string) => {
+  //check auth
+  const session = await getServerSession()
+  if(!session){
+    throw new Error('user not authenticated')
+  }
+  try {
+    await prisma.uploads.update({
+      where: {
+        id: fileId
+      },
+      data:{
+        starred: true
+      }
+    })
+    //return res
+    return({
+      success: true,
+      message: 'added to starred successfully'
+    })
+  } catch (error) {
+    console.log(error,'error in updating starred file')
+    throw new Error("cant star this file, try again")
+  }
+}

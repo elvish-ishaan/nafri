@@ -23,13 +23,17 @@ export function FileModal({
     fileType: string;
     id: string;
     uploadDate: string;
+    starred: boolean;
   };
 }) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="w-full h-screen max-w-full mx-auto p-4">
         {/* File Details at the Top */}
-        <FileModalNav fileKey={fileDetails.fileKey} uploadDate={fileDetails.uploadDate}/>
+        <FileModalNav fileKey={fileDetails?.fileKey} 
+        uploadDate={fileDetails?.uploadDate} fileId={fileDetails?.id}
+        starred={fileDetails?.starred}
+        />
 
         {/* Media Container */}
         <div className="flex-grow flex items-center justify-center">
