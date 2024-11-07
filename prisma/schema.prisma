@@ -25,6 +25,7 @@ model Uploads {
   uploadDate String 
   user      User    @relation(fields: [userEmail], references: [email])
   userEmail  String
+  starred  Boolean? @default(false)
 }
 
 enum Roles {

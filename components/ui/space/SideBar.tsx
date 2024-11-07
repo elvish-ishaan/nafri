@@ -8,6 +8,7 @@ import { Separator } from '../separator';
 import { Button } from '../button';
 import { signOut } from 'next-auth/react';
 import { fetchUserData } from '@/app/actions/user';
+import { convertSpace } from '@/lib/convertSpace';
 
 const links = [
   { title: 'My Space', path: '/my-space', icon: Home },
@@ -18,22 +19,19 @@ const links = [
 ];
 
 
-
-//byte conversion 
-const convertSpace = (bytes: bigint, size: "GB" | "MB" | "KB"): number => {
-  const numBytes = Number(bytes);
-  switch (size) {
-    case "GB":
-      return numBytes / (1024 ** 3);
-    case "MB":
-      return numBytes / (1024 ** 2);
-    case "KB":
-      return numBytes / 1024;
-    default:
-      throw new Error("Invalid size. Use 'GB', 'MB', or 'KB'.");
-  }
+interface User {
+  id: string,
+  email: string,
+  name: string | null,
+  currentSpace: bigint;
+  totalSpace: bigint;
+  role: Roles;
 };
 
+enum Roles {
+  USER,
+  DEV
+}
 
 export default function SideBar() {
   const [ userData, setUserData] = useState<any | null>(null)
@@ -45,6 +43,7 @@ export default function SideBar() {
       const userData = await fetchUserData()
       console.log(userData.user,'user inside call')
       setUserData(userData.user)
+      console.log(convertSpace(userData?.user?.currentSpace, 'GB'),'here is converion')
     }
     //call func
     fetchUser()

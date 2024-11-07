@@ -1,53 +1,53 @@
-"use client"
+"use client";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import React from "react";
-import { Separator } from "../separator";
-import ReactPlayer from 'react-player'
+import ReactPlayer from "react-player";
+import FileModalNav from "../nav/FileModalNav";
 
-
-export function FileModal({ open,fileDetails,fileUrl }: {open: boolean, fileUrl: string, fileDetails:{
-  fileKey: string,
-  userEmail: string,
-  fileType: string,
-  id: string,
-  uploadDate: string
-}}) {
+export function FileModal({
+  open,
+  onClose,
+  fileDetails,
+  fileUrl,
+}: {
+  open: boolean;
+  onClose: () => void
+  fileUrl: string;
+  fileDetails: {
+    fileKey: string;
+    userEmail: string;
+    fileType: string;
+    id: string;
+    uploadDate: string;
+  };
+}) {
   return (
-    // fix diolog not closing
-    <Dialog open={open} onOpenChange={(open) => !open} >     
-      <DialogContent className=" min-h-screen min-w-full">
-        <DialogHeader className=" mt-5">
-          <div className=" flex justify-between">
-            <div className=" flex flex-col gap-1">
-            <DialogTitle>{ fileDetails.fileKey }</DialogTitle>
-            <DialogDescription>{new Date(fileDetails.uploadDate).toLocaleString()}</DialogDescription>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="w-full h-screen max-w-full mx-auto p-4">
+        {/* File Details at the Top */}
+        <FileModalNav fileKey={fileDetails.fileKey} uploadDate={fileDetails.uploadDate}/>
+
+        {/* Media Container */}
+        <div className="flex-grow flex items-center justify-center">
+          {fileDetails?.fileType === "jpg" && (
+            <Image
+              src={fileUrl}
+              alt={fileDetails.fileKey}
+              layout="responsive"
+              width={1000} // Set a large width for better scaling
+              height={1000} // Set a large height for better scaling
+              className="object-contain w-full h-auto max-h-[80vh]"
+            />
+          )}
+          {fileDetails?.fileType === "mp4" && (
+            <div className="w-full h-full max-h-[80vh] max-w-full">
+              <ReactPlayer url={fileUrl} controls={true} width="100%" height="100%" />
             </div>
-            
-            <div>
-              <DialogClose>close</DialogClose>
-            </div>
-          </div>
-        </DialogHeader>
-        <Separator/>
-        <div className=" w-full flex justify-center items-center">
-        {
-          fileDetails?.fileType === 'jpg' && (
-            <Image src={fileUrl} height={200} width={200} alt="hello" />
-          )
-        }
-        {
-          fileDetails?.fileType === 'mp4' && (
-            <ReactPlayer url={fileUrl} controls={true}/>
-          )
-        }
+          )}
         </div>
       </DialogContent>
     </Dialog>

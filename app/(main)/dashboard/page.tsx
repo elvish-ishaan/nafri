@@ -9,7 +9,6 @@ const Page = async () => {
   let uploadFiles;
   try {
      uploadFiles = await fetchAllUploads()
-    console.log(uploadFiles,'uploadfiles....')
   } catch (error) {
     console.log(error,'cant fetch uploads')
   }

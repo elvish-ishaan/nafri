@@ -149,3 +149,18 @@ export const fetchSignedUrl = async (fileKey: string) => {
     throw new Error('Can\'t fetch upload URLs');
   }
 }
+
+
+//add to starred 
+// const addToStarred = async () => {
+//   //check auth
+//   const session = await getServerSession()
+//   if(!session){
+//     throw new Error('user not authenticated')
+//   }
+//   try {
+    
+//   } catch (error) {
+//     console.log()
+//   }
+// }
