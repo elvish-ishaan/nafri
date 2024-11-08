@@ -23,7 +23,7 @@ model Uploads {
   fileKey   String
   fileType  String
   uploadDate String 
-  user      User    @relation(fields: [userEmail], references: [email])
+  user      User    @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   userEmail  String
   starred  Boolean? @default(false)
 }

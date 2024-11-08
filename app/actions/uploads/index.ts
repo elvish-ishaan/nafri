@@ -1,7 +1,7 @@
 "use server"
 import { Bucket, s3 } from "@/app/configs/awsConfig";
 import prisma from "@/prisma/prismaClient";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from 'uuid';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -91,6 +91,51 @@ export const uploadFileAws = async (formData: FormData) => {
       console.error(error);
       throw new Error("Something went wrong in uploading to aws")
     }
+}
+
+//delete file from storage
+export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
+  //check auth
+  const session = await getServerSession()
+  if(!session){
+    throw new Error('user unauthenticated')
+  }
+  try {
+    //first delete file from aws
+     await s3.send(new DeleteObjectCommand({ 
+      Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME,
+       Key: toDelfileKey }));
+  } catch (error) {
+    console.log(error,'error in del obj aws')
+    throw new Error('error in deleting file')
+  }
+  //update metadata in db
+  try {
+    const updateUser = await prisma.user.update({
+      where: {
+        email: "user1@example.com"
+        //session.user?.email || '' fix this 
+      },
+      data: {
+        uploads: {
+          delete: {
+            id: fileId
+          }
+        }
+      }
+    })
+    console.log(updateUser)
+    if(!updateUser){
+      throw new Error('cant update user')
+    }
+  } catch (error) {
+    console.log(error,'error in updated del data')
+  }
+  //return res
+  return{
+    success: true,
+    message: 'file deleted success'
+  }
 }
 
 //get all uploads by email

@@ -9,6 +9,7 @@ import { Button } from '../button';
 import { signOut } from 'next-auth/react';
 import { fetchUserData } from '@/app/actions/user';
 import { convertSpace } from '@/lib/convertSpace';
+import { useToast } from '@/hooks/use-toast';
 
 const links = [
   { title: 'My Space', path: '/my-space', icon: Home },
@@ -35,22 +36,24 @@ enum Roles {
 
 export default function SideBar() {
   const [ userData, setUserData] = useState<any | null>(null)
+  const {toast} = useToast()
 
   useEffect(() => {
    try {
     //fetch user
     const fetchUser = async () => {
       const userData = await fetchUserData()
-      console.log(userData.user,'user inside call')
       setUserData(userData.user)
-      console.log(convertSpace(userData?.user?.currentSpace, 'GB'),'here is converion')
     }
     //call func
     fetchUser()
    } catch (error) {
     console.log(error,'cant get user data')
+    toast({
+      title: 'cant fetch user data'
+    })
    }
-  },[])
+  },[userData])
   return (
     <div className="flex h-screen flex-col text-foreground w-64 border-foreground-muted border-r-2">
       {/* Sidebar Header */}

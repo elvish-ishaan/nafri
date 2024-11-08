@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
   const [uploadLoading, setUploadLoading] = useState<boolean>(false)
