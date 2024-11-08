@@ -1,2 +1,3 @@
-fix storage cell rending issue
+fix types and username fixes
 add dev mode feature
+fix the proper control over starred( unstar and viceversa)
