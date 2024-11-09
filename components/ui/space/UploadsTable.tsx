@@ -67,7 +67,8 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
   return (
     <>
       {showModal && selectedFile && (
-        <FileModal open={showModal} onClose={() => setShowModal(false)} fileDetails={selectedFile} fileUrl={fileUrl || ""} />
+        <FileModal open={showModal} onClose={() => setShowModal(false)} 
+        fileDetails={selectedFile} fileUrl={fileUrl || ""} />
       )}
       <Table>
         <TableHeader>

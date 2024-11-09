@@ -12,7 +12,7 @@ import { convertSpace } from '@/lib/convertSpace';
 import { useToast } from '@/hooks/use-toast';
 
 const links = [
-  { title: 'My Space', path: '/my-space', icon: Home },
+  { title: 'My Space', path: '/dashboard', icon: Home },
   { title: 'Recents', path: '/recents', icon: Clock },
   { title: 'Starred', path: '/starred', icon: Star },
   { title: 'Share with me', path: '/shared', icon: Share2 },

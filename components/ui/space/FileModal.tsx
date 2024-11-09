@@ -33,6 +33,7 @@ export function FileModal({
         <FileModalNav fileKey={fileDetails?.fileKey} 
         uploadDate={fileDetails?.uploadDate} fileId={fileDetails?.id}
         starred={fileDetails?.starred}
+        fileOwner={fileDetails.userEmail}
         />
 
         {/* Media Container */}
