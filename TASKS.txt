@@ -1,5 +1,2 @@
-fix types and username fixes
-add to my space fucntion write
-fixing auto redirectly after login and logout
 add dev mode feature
 fix the proper control over starred( unstar and viceversa)

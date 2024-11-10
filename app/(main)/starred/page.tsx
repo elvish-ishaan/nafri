@@ -12,8 +12,7 @@ const Page = async () => {
     try {
           starredFiles = await prisma.uploads.findMany({
             where: {
-                //session.user?.email || '' fix
-                userEmail: "user1@example.com",
+                userEmail: session.user?.email || '',
                 starred: true,
             }
         })

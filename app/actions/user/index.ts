@@ -14,8 +14,7 @@ export const fetchUserData = async () => {
     try {
         const user = await prisma.user.findUnique({
             where: {
-                //fix this  session.user?.email || ''
-                email: 'user1@example.com'
+                email: session.user?.email || ''
             }
         })
         if(!user) {

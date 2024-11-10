@@ -6,9 +6,12 @@ interface StorageCellsProps {
 }
 
 const StorageCells: React.FC<StorageCellsProps> = ({ value, outOf }) => {
-  console.log(value,'this is value out of ', outOf)
-  // Calculate fill percentage
+  console.log(value,'getting st value', outOf)
   const fillPercentage = Math.min((value / outOf) * 100, 100).toFixed(1);
+
+  // Determine how many cells to fill based on the total number of cells (10)
+  const totalCells = 20;
+  const filledCells = Math.round((value / outOf) * totalCells);
 
   // Determine the color based on fill percentage
   const cellColor = Number(fillPercentage) > 70 ? 'bg-orange-500' : 'bg-green-500';
@@ -17,10 +20,10 @@ const StorageCells: React.FC<StorageCellsProps> = ({ value, outOf }) => {
     <div>
       <div className="flex items-center space-x-1">
         {/* Battery Cells */}
-        {[...Array(10)].map((_, index) => (
+        {[...Array(totalCells)].map((_, index) => (
           <div
             key={index}
-            className={`w-1 h-4 ${index < (Number(fillPercentage) / 10) ? cellColor : 'bg-muted'}`}
+            className={`w-1 h-4 ${index < filledCells ? cellColor : ' bg-muted'}`}
           />
         ))}
       </div>

@@ -25,9 +25,15 @@ const page = async ({ params }: { params: { fileId: string } }) => {
     } catch (error) {
         console.log(error,'error in fetching file shared')
     }
+
+    //set interval to auto close the modal 
+    let modalOpen = true
+    setInterval(() => {
+        modalOpen= false
+    }, 30*1000);
   return (
     <div>
-        <FileModal open={true} fileUrl={signedUrl || ''} fileDetails={file || null}/>
+        <FileModal open={modalOpen} fileUrl={signedUrl || ''} fileDetails={file || null}/>
     </div>
   )
 }

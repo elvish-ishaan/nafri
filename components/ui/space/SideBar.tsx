@@ -8,7 +8,6 @@ import { Separator } from '../separator';
 import { Button } from '../button';
 import { signOut } from 'next-auth/react';
 import { fetchUserData } from '@/app/actions/user';
-import { convertSpace } from '@/lib/convertSpace';
 import { useToast } from '@/hooks/use-toast';
 
 const links = [
@@ -20,22 +19,12 @@ const links = [
 ];
 
 
-interface User {
-  id: string,
-  email: string,
-  name: string | null,
-  currentSpace: bigint;
-  totalSpace: bigint;
-  role: Roles;
-};
-
-enum Roles {
-  USER,
-  DEV
+interface  UserStorage {
+  value: number,
+  outOf: number
 }
-
 export default function SideBar() {
-  const [ userData, setUserData] = useState<any | null>(null)
+  const [userStorage, setUserStorage] = useState<UserStorage>({value: 0, outOf: 0})
   const {toast} = useToast()
 
   useEffect(() => {
@@ -43,7 +32,10 @@ export default function SideBar() {
     //fetch user
     const fetchUser = async () => {
       const userData = await fetchUserData()
-      setUserData(userData.user)
+      setUserStorage({
+        value: Number(userData.user.currentSpace) / (1024 * 1024 * 1024), // assuming 'currentStorage' is in bytes
+        outOf: Number(userData.user.totalSpace) / (1024 * 1024 * 1024), // assuming 'totalSpace' is in bytes
+      });
     }
     //call func
     fetchUser()
@@ -84,7 +76,8 @@ export default function SideBar() {
               <Cloud/><span >Storage</span>
            </div>
             <div className=' px-1 mt-3 flex flex-col justify-between'>
-               <StorageCells value={ convertSpace(userData?.currentSpace, 'GB') } outOf={ convertSpace(userData?.currentSpace, 'GB') }/>
+               <StorageCells value={ userStorage.value }
+                outOf={userStorage.outOf }/>
                <Button variant={'outline'}>Upgrade</Button>
             </div>
         </div>

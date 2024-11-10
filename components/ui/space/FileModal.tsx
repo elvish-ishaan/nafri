@@ -7,16 +7,19 @@ import Image from "next/image";
 import React from "react";
 import ReactPlayer from "react-player";
 import FileModalNav from "../nav/FileModalNav";
+import Loading from "@/app/(main)/dashboard/loading";
 
 export function FileModal({
   open,
   onClose,
   fileDetails,
   fileUrl,
+  loading,
 }: {
   open: boolean;
   onClose: () => void
   fileUrl: string;
+  loading?: boolean;
   fileDetails: {
     fileKey: string;
     userEmail: string;
@@ -33,11 +36,14 @@ export function FileModal({
         <FileModalNav fileKey={fileDetails?.fileKey} 
         uploadDate={fileDetails?.uploadDate} fileId={fileDetails?.id}
         starred={fileDetails?.starred}
-        fileOwner={fileDetails.userEmail}
+        fileOwner={fileDetails?.userEmail}
+        fileUrl={fileUrl}
         />
 
         {/* Media Container */}
-        <div className="flex-grow flex items-center justify-center">
+        {
+          loading ? <Loading/> :
+          <div className="flex-grow flex items-center justify-center">
           {fileDetails?.fileType === "jpg" && (
             <Image
               src={fileUrl}
@@ -54,6 +60,7 @@ export function FileModal({
             </div>
           )}
         </div>
+        }
       </DialogContent>
     </Dialog>
   );

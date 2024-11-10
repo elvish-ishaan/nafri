@@ -1,9 +1,8 @@
 "use server"
 import { Bucket, s3 } from "@/app/configs/awsConfig";
 import prisma from "@/prisma/prismaClient";
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
-import { v4 as uuidv4 } from 'uuid';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { contentType } from "@/lib/contentTypes";
 
@@ -18,15 +17,12 @@ export const uploadFileAws = async (formData: FormData) => {
     //do upload operations
     const file = formData.get("file") as File;
     if (!file) return;
-    const ext = file?.name.split(".").at(-1);
-    const uid = uuidv4().split('-')
-    const fileName = `${uid[0]}${ext ? "." + ext : ""}`
+    const fileName = file.name
 
     //check storage operation like is user able to upload according to his assingned storage
       const user = await prisma.user.findUnique({
         where: {
-          //fix with actual session.user?.email || ''
-          email: 'user1@example.com'
+          email: session.user?.email || "",
         }
       });
 
@@ -62,15 +58,14 @@ export const uploadFileAws = async (formData: FormData) => {
               fileKey: fileName,
               uploadDate: new Date().toISOString(),
               fileType: fileExtension,
-              userEmail: 'user1@example.com',
+              userEmail: session.user?.email || '',
             },
           }),
         
           // Update user storage
           prisma.user.update({
             where: {
-              //fix session.user.email || ''
-              email: 'user1@example.com',
+              email: session.user?.email || "",
             },
             data: {
               currentSpace: {
@@ -113,8 +108,7 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
   try {
     const updateUser = await prisma.user.update({
       where: {
-        email: "user1@example.com"
-        //session.user?.email || '' fix this 
+        email: session.user?.email || ''
       },
       data: {
         uploads: {
@@ -147,8 +141,7 @@ export const fetchAllUploads = async () => {
   try {
     const uploadsMetaData = await prisma.uploads.findMany({
       where:{
-        userEmail: "user1@example.com"
-        // userEmail: session.user?.email
+        userEmail: session.user?.email || ''
       }
     })
     console.log(uploadsMetaData,'this are all uploads')
@@ -182,7 +175,8 @@ export const fetchSignedUrl = async (fileKey: string) => {
       // Create a command for getting the object
       const command = new GetObjectCommand({
         Bucket,
-        Key: fileKey || ''
+        Key: fileKey || '',
+        ResponseContentDisposition: 'attachment'
       });
  
       // Get the pre-signed URL
@@ -220,5 +214,51 @@ export const addToStarred = async (fileId: string) => {
   } catch (error) {
     console.log(error,'error in updating starred file')
     throw new Error("cant star this file, try again")
+  }
+}
+
+//adding shared file to non-owner space
+export const addFileToSpace = async (fileId: string, acceptingUser: string) => {
+  const session = await getServerSession()
+  if(!session){
+    return {
+      success: false,
+      message: 'unauhtenticated user'
+    }
+  }
+  try {
+
+    const updatedUserUploads = await prisma.user.update({
+      where: {
+        email: acceptingUser || ''
+      },
+      data: {
+        uploads: {
+          //fix user which adds file to there own space gets owner
+          // email as their own eamil instaed of owners email
+          connect: {id: fileId}         
+        }
+      },
+      include: {
+        uploads: true
+      }
+    })
+    if(!updatedUserUploads){
+      return {
+        success: false,
+        message: 'cant update the uploads'
+      }
+    }
+    //return res
+    return {
+      success: true,
+      message: 'file added succesfully'
+    }
+  } catch (error) {
+    console.log(error,'error in adding share file to non-owner space')
+    return {
+      success: false,
+      message: 'internal server error'
+    }
   }
 }
