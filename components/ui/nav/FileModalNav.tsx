@@ -1,10 +1,10 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DialogDescription, DialogTitle } from '../dialog'
 import { Button } from '../button'
-import { Download, Plus, Share2, Star } from 'lucide-react'
+import { ArchiveRestore, Download, Plus, Redo2, Share2, Star, Undo2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { addFileToSpace, addToStarred } from '@/app/actions/uploads'
+import { addFileToSpace, addToStarred, restoreFile } from '@/app/actions/uploads'
 import { useSession } from 'next-auth/react'
 
 //refactor the whole props send filedetails as whole object and then
@@ -17,6 +17,12 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
     const [copyStatus, setCopySatus] = useState<boolean>(false)
     const { data } = useSession()
     const [addedFileStatus, setFileAddedStatus] = useState<boolean>(false)
+    const [currentPath, setCurrentPath] = useState('');
+
+    useEffect(() => {
+        // Get the full URL path on the client side
+        setCurrentPath(window.location.pathname);
+    }, []);
     //handling add to starred
     const handleStarClk = async () => {
       try {
@@ -58,6 +64,15 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
         }
     }
 
+    //hanlding file restoration
+    const handleFileRes = async (fileId: string) => {
+      try {
+        const res = await restoreFile(fileId)
+      } catch (error) {
+        console.log(error,'error in restoring file')
+      }
+    }
+
   return (
     <div className="flex justify-between items-center">
           <div className='flex flex-col mb-4'>
@@ -76,9 +91,16 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
               </Button>
              }
            </div>
+        
 
           <div className=' px-10 flex items-center gap-3'>
+            {
+              currentPath === '/bin' && data?.user?.email == fileOwner && <Button
+               onClick={() => handleFileRes(fileId)}><Redo2/>Restore</Button>
+            }
+
             <Button onClick={() => handleShare(fileId)}><Share2/>{ copyStatus ?  <p>copied</p> : <p>Share</p>}</Button>
+            
             <a href={fileUrl}><Button><Download/>Download</Button></a>
             {
               addedToStarred ? <Button><Star fill='yellow'/></Button> 

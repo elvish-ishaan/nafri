@@ -1,10 +1,17 @@
 import { Bucket, s3 } from "@/app/configs/awsConfig";
 import prisma from "@/prisma/prismaClient";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from 'uuid';
 
 export const uploadFileAws = async (file: File | null) => {
-  console.log(file,'getting file in actions')
+  const session = await getServerSession()
+  if(!session){
+    return {
+      success: false,
+      message: 'user unauthenticated'
+  }
+  }
     if (!file) return;
     const ext = file?.name.split(".").at(-1);
     const uid = uuidv4().split('-')
@@ -21,7 +28,10 @@ export const uploadFileAws = async (file: File | null) => {
           await s3.send(uploadToS3);
       } catch (error) {
         console.log(error,'error in uploading to aws')
-        throw new Error('Error in uploading file')
+        return {
+          success: false,
+          message: 'error uploading file'
+      }
       }
       //save metadata to database
       try {
@@ -29,7 +39,7 @@ export const uploadFileAws = async (file: File | null) => {
             data: {
                 fileKey: fileName,
                 uploadDate: new Date().toISOString(),
-                userEmail: 'shamirganie62@gmail.com'
+                userEmail: session?.user?.email || ''
             }
         })
         return {

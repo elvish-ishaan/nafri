@@ -6,7 +6,6 @@ interface StorageCellsProps {
 }
 
 const StorageCells: React.FC<StorageCellsProps> = ({ value, outOf }) => {
-  console.log(value,'getting st value', outOf)
   const fillPercentage = Math.min((value / outOf) * 100, 100).toFixed(1);
 
   // Determine how many cells to fill based on the total number of cells (10)

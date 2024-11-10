@@ -34,8 +34,8 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
 
   const handleViewClk = async (fileKey: string) => {
     try {
-      const url = await fetchSignedUrl(fileKey);
-      setFileUrl(url || null);
+      const res = await fetchSignedUrl(fileKey);
+      setFileUrl(res.signedUrl || null);
       setSelectedFile(filesData.find((file) => file.fileKey === fileKey) || null);
       setShowModal(true);
     } catch (error) {
@@ -54,6 +54,10 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
       if(res.success){
         toast({
           title: "File Deleted"
+        })
+      }else{
+        toast({
+          title: 'unable to delete file'
         })
       }
     } catch (error) {

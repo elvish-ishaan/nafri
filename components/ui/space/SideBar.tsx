@@ -33,8 +33,8 @@ export default function SideBar() {
     const fetchUser = async () => {
       const userData = await fetchUserData()
       setUserStorage({
-        value: Number(userData.user.currentSpace) / (1024 * 1024 * 1024), // assuming 'currentStorage' is in bytes
-        outOf: Number(userData.user.totalSpace) / (1024 * 1024 * 1024), // assuming 'totalSpace' is in bytes
+        value: Number(userData.user?.currentSpace) / (1024 * 1024 * 1024), // assuming 'currentStorage' is in bytes
+        outOf: Number(userData.user?.totalSpace) / (1024 * 1024 * 1024), // assuming 'totalSpace' is in bytes
       });
     }
     //call func

@@ -7,7 +7,10 @@ import React from 'react'
 const page = async ({ params }: { params: { fileId: string } }) => {
     const session = await getServerSession()
     if(!session){
-        throw new Error('User unauthenticated')
+        return {
+            success: false,
+            message: "user unauthenticated"
+        }
     }
     let file;
     let signedUrl;

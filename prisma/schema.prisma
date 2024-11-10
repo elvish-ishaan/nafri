@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,26 +8,44 @@ datasource db {
 }
 
 model User {
-  id    String     @id @default(uuid())
-  email String  @unique
-  name  String?
-  uploads Uploads[]
-  currentSpace  BigInt @default(0)
-  totalSpace  BigInt   @default(21474836480)
-  role  Roles  @default(USER)
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String?
+  uploads      Uploads[]
+  recents      Recents[]
+  currentSpace BigInt    @default(0)
+  totalSpace   BigInt    @default(21474836480)
+  role         Roles     @default(USER)
+  binFiles     BinFiles[]
 }
 
 model Uploads {
-  id        String @id @default(uuid())
-  fileKey   String
-  fileType  String
-  uploadDate String 
-  user      User    @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  fileKey    String
+  fileType   String
+  uploadDate String
+  user       User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   userEmail  String
-  starred  Boolean? @default(false)
+  starred    Boolean? @default(false)
 }
 
 enum Roles {
   USER
   DEV
+}
+
+model Recents {
+  id         String   @id @default(uuid())
+  uploadType String
+  accessedAt DateTime @default(now())
+  user       User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  userEmail  String
+}
+
+model BinFiles {
+  id  String @id @default(uuid())
+  triggeredAt  String
+  uploadedFileId  String
+  user       User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  userEmail  String
 }

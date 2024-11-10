@@ -12,7 +12,10 @@ export const uploadFileAws = async (formData: FormData) => {
     const session = await getServerSession()
 
     if(!session){
-        throw new Error('Unauthorised user')
+      return {
+        success: false,
+        message: 'user unauthenticated'
+    }
     }
     //do upload operations
     const file = formData.get("file") as File;
@@ -29,7 +32,10 @@ export const uploadFileAws = async (formData: FormData) => {
       //compare storage
       const expectedStorage = Number(user?.currentSpace) + file.size;
       if( expectedStorage > Number( user?.totalSpace) ) {
-        throw new Error("File Size Exceeds Your Current Space")
+        return {
+          success: false,
+          message: 'Not enough storage'
+      }
       }
     try {
       let fileExtension:(string | undefined)
@@ -47,7 +53,10 @@ export const uploadFileAws = async (formData: FormData) => {
           await s3.send(uploadToS3);
       } catch (error) {
         console.log(error,'error in uploading to aws')
-        throw new Error('Error in uploading file')
+        return {
+          success: false,
+          message: 'unable to upload file'
+      }
       }
       //save metadata to database
       try {
@@ -68,9 +77,16 @@ export const uploadFileAws = async (formData: FormData) => {
               email: session.user?.email || "",
             },
             data: {
+              //increase (add to existing) storage
               currentSpace: {
                 increment: file.size, 
               },
+              //update recents
+              recents: {
+                create: {
+                  uploadType: fileExtension,
+                }
+              }
             },
           }),
         ]);
@@ -80,11 +96,17 @@ export const uploadFileAws = async (formData: FormData) => {
         }
       } catch (error) {
         console.log(error,'error in saving metadata to db')
-        throw new Error("error in saving metadata of uploaded files")
+        return {
+          success: false,
+          message: 'some problem occur'
+      }
       }
     } catch (error) {
       console.error(error);
-      throw new Error("Something went wrong in uploading to aws")
+      return {
+        success: false,
+        message: 'internal server error'
+    }
     }
 }
 
@@ -93,38 +115,50 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
   //check auth
   const session = await getServerSession()
   if(!session){
-    throw new Error('user unauthenticated')
+    return {
+      success: false,
+      message: 'user unauthenticated'
   }
-  try {
-    //first delete file from aws
-     await s3.send(new DeleteObjectCommand({ 
-      Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME,
-       Key: toDelfileKey }));
-  } catch (error) {
-    console.log(error,'error in del obj aws')
-    throw new Error('error in deleting file')
   }
-  //update metadata in db
+  //move files to bin
   try {
-    const updateUser = await prisma.user.update({
+     await prisma.user.update({
       where: {
-        email: session.user?.email || ''
+        email: session.user?.email || '',
       },
       data: {
-        uploads: {
-          delete: {
-            id: fileId
-          }
-        }
+        binFiles: {
+          create: {
+            uploadedFileId: fileId,
+            triggeredAt: new Date().toISOString(),
+          },
+        },
+      },
+      include:{
+        binFiles: true
       }
-    })
-    console.log(updateUser)
-    if(!updateUser){
-      throw new Error('cant update user')
-    }
+    });
   } catch (error) {
-    console.log(error,'error in updated del data')
+    console.log(error,'error in moving files to bin')
+    return {
+      success: false,
+      message: 'cant move file to bin'
+    }
   }
+  //deleting file from aws 
+  // try {
+  //   //first delete file from aws
+  //    await s3.send(new DeleteObjectCommand({ 
+  //     Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME,
+  //      Key: toDelfileKey }));
+  // } catch (error) {
+  //   console.log(error,'error in del obj aws')
+  //   return {
+  //     success: false,
+  //     message: 'unable to delete file'
+  // }
+  // }
+
   //return res
   return{
     success: true,
@@ -136,7 +170,10 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
 export const fetchAllUploads = async () => {
   const session = await getServerSession()
   if(!session){
-    throw new Error('unauthenticated user')
+    return {
+      success: false,
+      message: 'user unauthenticated'
+  }
   }
   try {
     const uploadsMetaData = await prisma.uploads.findMany({
@@ -144,9 +181,11 @@ export const fetchAllUploads = async () => {
         userEmail: session.user?.email || ''
       }
     })
-    console.log(uploadsMetaData,'this are all uploads')
     if(!uploadsMetaData || uploadsMetaData.length == 0){
-      throw new Error("No uploads found")
+      return {
+        success: false,
+        message: 'no uploads found'
+    }
     }
     //return res
     return {
@@ -158,7 +197,10 @@ export const fetchAllUploads = async () => {
     };
   } catch (error) {
     console.log(error,'error in fetching uplods')
-    throw new Error('cant fetch uploads')
+    return {
+      success: false,
+      message: 'cant fetch uploads'
+  }
   }
 }
 
@@ -166,10 +208,16 @@ export const fetchSignedUrl = async (fileKey: string) => {
   //authentication check
   const session = await getServerSession()
   if(!session){
-    throw new Error("user unauthenticated")
+    return {
+      success: false,
+      message: 'user unauthenticated'
+  }
   }
   if(!fileKey){
-    throw new Error('filekey is missing')
+    return {
+      success: false,
+      message: 'file key missing'
+  }
   }
   try {
       // Create a command for getting the object
@@ -181,11 +229,16 @@ export const fetchSignedUrl = async (fileKey: string) => {
  
       // Get the pre-signed URL
       const signedUrl = await getSignedUrl(s3, command);
-      console.log(signedUrl, 'this is signed url mapping....');
-      return signedUrl || null; // Return null if signedUrl is undefined    
+      return {
+        success: false,
+        signedUrl
+      }; // Return null if signedUrl is undefined    
   } catch (error) {
     console.log(error, 'can\'t get signed urls');
-    throw new Error('Can\'t fetch upload URLs');
+    return {
+      success: false,
+      message: 'cant fetch file url'
+  }
   }
 }
 
@@ -195,7 +248,10 @@ export const addToStarred = async (fileId: string) => {
   //check auth
   const session = await getServerSession()
   if(!session){
-    throw new Error('user not authenticated')
+    return {
+      success: false,
+      message: 'user unauthenticated'
+  }
   }
   try {
     await prisma.uploads.update({
@@ -213,7 +269,10 @@ export const addToStarred = async (fileId: string) => {
     })
   } catch (error) {
     console.log(error,'error in updating starred file')
-    throw new Error("cant star this file, try again")
+    return {
+      success: false,
+      message: 'internal server error'
+  }
   }
 }
 
@@ -260,5 +319,77 @@ export const addFileToSpace = async (fileId: string, acceptingUser: string) => {
       success: false,
       message: 'internal server error'
     }
+  }
+}
+
+//get bin files of user
+export const getBinFiles = async () => {
+  const session = await getServerSession()
+  if(!session){
+    return {
+      success: false,
+      message: 'user unauthenticated'
+    }
+  }
+  try {
+    const binFilesMetaData = await prisma.binFiles.findMany({
+      where: {
+        userEmail: session.user?.email || ''
+      }
+    })
+    if(!binFilesMetaData || binFilesMetaData.length === 0) {
+      return {
+        success: false,
+        message: 'no files found in bin'
+      }
+    }
+    const files = await Promise.all(
+      binFilesMetaData.map(async (binFile) => {
+        const delFile = await prisma.uploads.findFirst({
+          where: {
+            id: binFile.uploadedFileId
+          }
+        });
+        return delFile; // You can return the file data here for further use
+      })
+    );
+    //return responce with files
+    return {
+      success: true,
+      binFiles: files
+      
+    }
+  } catch (error) {
+    console.log(error,'error in getting bin files')
+  }
+}
+
+//hanlding file restoration
+export const restoreFile = async (fileId: string) => {
+  const session = await getServerSession()
+  if(!session){
+    return {
+      success: false,
+      message: 'user unauthenticated'
+    }
+  }
+
+  try {
+    const resFileUser = await prisma.user.update({
+      where: {
+        email: session.user?.email || ''
+      },
+      data: {
+        binFiles: {
+          delete: {
+            id: fileId
+          }
+        }
+      },
+      include:{ binFiles: true}
+    });
+    console.log(resFileUser,'resotred',fileId,'this was file id')
+  } catch (error) {
+    console.log(error,'error in restoring file to db')
   }
 }

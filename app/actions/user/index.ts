@@ -7,7 +7,10 @@ export const fetchUserData = async () => {
     //check auth
     const session = await getServerSession()
     if(!session){
-        throw new Error('user not authenticated')
+        return {
+            success: false,
+            message: 'user unauthenticated'
+        }
     }
 
     //check for details
@@ -18,7 +21,10 @@ export const fetchUserData = async () => {
             }
         })
         if(!user) {
-            throw new Error('user data not found')
+            return {
+                success: false,
+                message: 'user not found'
+            }
         }
         //return responce
         return{
@@ -27,6 +33,9 @@ export const fetchUserData = async () => {
         }
     } catch (error) {
         console.log(error,'error in fetching user data from db')
-        throw new Error('something went wrong')
+        return {
+            success: false,
+            message: 'internal server error'
+        }
     }
 }

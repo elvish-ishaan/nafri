@@ -37,6 +37,10 @@ const UploadBtn: React.FC = () => {
         toast({
           title: 'uploaded successfully',
         })
+      }else{
+        toast({
+          title: upload?.message
+        })
       }
     } catch (error) {
       console.log(error,'error in uploading')

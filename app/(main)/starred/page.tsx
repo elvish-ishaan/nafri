@@ -6,7 +6,10 @@ import React from 'react'
 const Page = async () => {
     const session = await getServerSession()
     if(!session){
-        throw new Error('user unauthenticated')
+        return {
+            success: false,
+            message: 'user unauthenticated'
+        }
     }
     let starredFiles
     try {
@@ -16,7 +19,6 @@ const Page = async () => {
                 starred: true,
             }
         })
-        console.log(starredFiles,'these are starred files')
     } catch (error) {
         console.log(error,'error in fetching starred files')
     }
