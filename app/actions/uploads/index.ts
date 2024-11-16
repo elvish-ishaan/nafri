@@ -127,6 +127,11 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
         email: session.user?.email || '',
       },
       data: {
+        uploads: {
+          delete:{
+            id: fileId
+          }
+        },
         binFiles: {
           create: {
             uploadedFileId: fileId,

@@ -1,2 +1,4 @@
 add dev mode feature
 fix the proper control over starred( unstar and viceversa)
+fix that when we delete a files it gets perminantly deleted without getting inside bin files
+fix restoring of files 
