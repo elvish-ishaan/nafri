@@ -1,5 +1,5 @@
 "use client"
-import { Delete, EllipsisVertical, HardDrive, Star, Trash2 } from "lucide-react";
+import { EllipsisVertical, HardDrive, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { deleteFileAws, fetchSignedUrl } from "@/app/actions/uploads";
 import {
@@ -26,6 +26,7 @@ interface FileMetaData {
 
 export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [uplaodFiles, setUploadFiles] = useState< FileMetaData[] | []>(filesData)
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileMetaData | null>(null);
   const [showTooltip, setShowTooltip] = useState<boolean>(false);

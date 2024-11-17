@@ -201,7 +201,8 @@ export const fetchAllUploads = async () => {
   }
 }
 
-export const fetchSignedUrl = async (fileKey: string) => {
+//get signed urls
+export const fetchSignedUrl = async (fileKey: string, downloadable?: boolean) => {
   //authentication check
   const session = await getServerSession()
   if(!session){
@@ -221,7 +222,7 @@ export const fetchSignedUrl = async (fileKey: string) => {
       const command = new GetObjectCommand({
         Bucket,
         Key: fileKey || '',
-        ResponseContentDisposition: 'attachment'
+        ResponseContentDisposition: downloadable ? 'attachment' : 'inline'
       });
  
       // Get the pre-signed URL

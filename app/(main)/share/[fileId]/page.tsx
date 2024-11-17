@@ -36,7 +36,7 @@ const page = async ({ params }: { params: { fileId: string } }) => {
     }, 30*1000);
   return (
     <div>
-        <FileModal open={modalOpen} fileUrl={signedUrl || ''} fileDetails={file || null}/>
+        <FileModal open={modalOpen} fileUrl={signedUrl?.signedUrl || ''} fileDetails={file || null}/>
     </div>
   )
 }

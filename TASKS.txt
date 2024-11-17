@@ -4,3 +4,4 @@ fix that when we delete a files it gets perminantly deleted without getting insi
 fix restoring of files 
 cron job for deleting file regularly
 make other function for generating downlaod liks for media 
+make a custom sign-in page and update all realted func
