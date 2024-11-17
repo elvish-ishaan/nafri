@@ -1,11 +1,12 @@
 "use client"
-import { signIn } from 'next-auth/react'
 import { Button } from '../button'
 import { Cloud } from 'lucide-react'
 import { landNavLinks } from '@/data/landingNavLinks'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const NavBar = ({extraClasses}: {extraClasses?: string}) => {
+  const router = useRouter()
   return (
     <div className={`flex justify-between py-8 px-10 ${extraClasses} `}>
         <div><Cloud className=' size-8 hover:text-muted-foreground' /></div>
@@ -15,7 +16,7 @@ const NavBar = ({extraClasses}: {extraClasses?: string}) => {
           }
         </div>
         <div>
-          <Button onClick={() => signIn()}>Sign In</Button>
+          <Button onClick={() => router.push('/auth/sign-in')}>Sign In</Button>
         </div>
     </div>
   )

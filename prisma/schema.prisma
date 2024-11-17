@@ -10,13 +10,13 @@ datasource db {
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
+  password     String?
   name         String?
   uploads      Uploads[]
   recents      Recents[]
   currentSpace BigInt    @default(0)
   totalSpace   BigInt    @default(21474836480)
   role         Roles     @default(USER)
-  binFiles     BinFiles[]
 }
 
 model Uploads {
