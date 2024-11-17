@@ -27,6 +27,8 @@ model Uploads {
   user       User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   userEmail  String
   starred    Boolean? @default(false)
+  deleted    Boolean  @default(false)
+  deleteDate DateTime? 
 }
 
 enum Roles {
@@ -42,10 +44,3 @@ model Recents {
   userEmail  String
 }
 
-model BinFiles {
-  id  String @id @default(uuid())
-  triggeredAt  String
-  uploadedFileId  String
-  user       User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
-  userEmail  String
-}

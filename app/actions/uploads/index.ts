@@ -122,27 +122,16 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
   }
   //move files to bin
   try {
-     await prisma.user.update({
+    const updatedUpload = await prisma.uploads.update({
       where: {
-        email: session.user?.email || '',
+        id: fileId, // Identify the record by its ID
       },
       data: {
-        uploads: {
-          delete:{
-            id: fileId
-          }
-        },
-        binFiles: {
-          create: {
-            uploadedFileId: fileId,
-            triggeredAt: new Date().toISOString(),
-          },
-        },
+        deleted: true, // Set the `deleted` field to `true`
+        deleteDate: new Date(), // Optionally set the `deleteDate`
       },
-      include:{
-        binFiles: true
-      }
     });
+    console.log(updatedUpload,'this si updload after del')
   } catch (error) {
     console.log(error,'error in moving files to bin')
     return {
@@ -181,10 +170,13 @@ export const fetchAllUploads = async () => {
   }
   }
   try {
+    //fetch only those uploads which are not deleted
+    //or whose status are not deleted
     const uploadsMetaData = await prisma.uploads.findMany({
       where:{
-        userEmail: session.user?.email || ''
-      }
+        userEmail: session.user?.email || '',
+        deleted: false
+      },
     })
     if(!uploadsMetaData || uploadsMetaData.length == 0){
       return {
@@ -337,31 +329,20 @@ export const getBinFiles = async () => {
     }
   }
   try {
-    const binFilesMetaData = await prisma.binFiles.findMany({
-      where: {
-        userEmail: session.user?.email || ''
-      }
-    })
-    if(!binFilesMetaData || binFilesMetaData.length === 0) {
-      return {
-        success: false,
-        message: 'no files found in bin'
-      }
-    }
-    const files = await Promise.all(
-      binFilesMetaData.map(async (binFile) => {
-        const delFile = await prisma.uploads.findFirst({
-          where: {
-            id: binFile.uploadedFileId
-          }
-        });
-        return delFile; // You can return the file data here for further use
-      })
-    );
+    const deletedUploads = await prisma.user.findUnique({
+      where: { 
+        email: session.user?.email || ''
+       },
+      select: {
+        uploads: {
+          where: { deleted: true },
+        },
+      },
+    });
     //return responce with files
     return {
       success: true,
-      binFiles: files
+      binFiles: deletedUploads?.uploads
       
     }
   } catch (error) {
@@ -380,20 +361,29 @@ export const restoreFile = async (fileId: string) => {
   }
 
   try {
-    const resFileUser = await prisma.user.update({
+    // Update the upload's delete status
+    const restoredFile = await prisma.uploads.updateMany({
       where: {
-        email: session.user?.email || ''
+        id: fileId,
+        userEmail: session.user?.email || '',
       },
       data: {
-        binFiles: {
-          delete: {
-            id: fileId
-          }
-        }
+        deleted: false,
+        deleteDate: new Date(), // Sets the delete date
       },
-      include:{ binFiles: true}
     });
-    console.log(resFileUser,'resotred',fileId,'this was file id')
+
+    if (restoredFile.count === 0) {
+      return {
+        success: false,
+        message: `Upload with ID ${fileId} not found or does not belong to the user.`
+      }
+    }
+    //return res
+    return {
+      success: true,
+      message: 'restored successfull'
+    }
   } catch (error) {
     console.log(error,'error in restoring file to db')
   }

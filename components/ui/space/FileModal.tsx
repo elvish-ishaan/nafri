@@ -29,6 +29,7 @@ export function FileModal({
     starred: boolean;
   };
 }) {
+  console.log(fileUrl,'this is file url')
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="w-full h-screen max-w-full mx-auto p-4">

@@ -18,6 +18,7 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
     const { data } = useSession()
     const [addedFileStatus, setFileAddedStatus] = useState<boolean>(false)
     const [currentPath, setCurrentPath] = useState('');
+    const [isRestored, setIsRestored] = useState<boolean>(false)
 
     useEffect(() => {
         // Get the full URL path on the client side
@@ -67,7 +68,19 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
     //hanlding file restoration
     const handleFileRes = async (fileId: string) => {
       try {
-        const res = await restoreFile(fileId)
+        const res = await restoreFile(fileId);
+
+        if(res?.success){
+          setIsRestored(true)
+          toast({
+            title: 'File Restored',
+          })
+        }else{
+          toast({
+            title: 'File Cant Be Restored',
+            variant: 'destructive'
+          })
+        }
       } catch (error) {
         console.log(error,'error in restoring file')
       }
@@ -96,7 +109,9 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
           <div className=' px-10 flex items-center gap-3'>
             {
               currentPath === '/bin' && data?.user?.email == fileOwner && <Button
-               onClick={() => handleFileRes(fileId)}><Redo2/>Restore</Button>
+               onClick={() => handleFileRes(fileId)}>{isRestored ?
+                 <span className=' flex items-center gap-2'><Redo2/>Restored</span> 
+                 : <span>Restore</span>}</Button>
             }
 
             <Button onClick={() => handleShare(fileId)}><Share2/>{ copyStatus ?  <p>copied</p> : <p>Share</p>}</Button>

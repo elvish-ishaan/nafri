@@ -12,9 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 
 const links = [
   { title: 'My Space', path: '/dashboard', icon: Home },
-  { title: 'Recents', path: '/recents', icon: Clock },
+  // { title: 'Recents', path: '/recents', icon: Clock },
   { title: 'Starred', path: '/starred', icon: Star },
-  { title: 'Share with me', path: '/shared', icon: Share2 },
+  // { title: 'Share with me', path: '/shared', icon: Share2 },
   { title: 'Bin', path: '/bin', icon: Trash2 },
 ];
 
