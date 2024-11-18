@@ -10,7 +10,17 @@ export async function middleware(req: NextRequest) {
   if (pathname === '/' || pathname.startsWith('/api/auth') || pathname === '/login') {
     return NextResponse.next()
   }
-
+  
+  // Allow access to the landing page, NextAuth auth routes, and the sign-in page
+  if (
+    pathname === '/' || 
+    pathname.startsWith('/api/auth') || 
+    pathname === '/login' || 
+    pathname === '/auth/sign-in'
+  ) {
+    return NextResponse.next()
+  }
+  
   // Redirect unauthenticated users trying to access protected routes
   if (!token) {
     return NextResponse.redirect(new URL('/', req.url)) // Redirects to landing page
