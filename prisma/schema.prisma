@@ -17,6 +17,15 @@ model User {
   currentSpace BigInt    @default(0)
   totalSpace   BigInt    @default(21474836480)
   role         Roles     @default(USER)
+  apiKeys      ApiKeys[]
+}
+
+model ApiKeys {
+  id   String @id  @default(uuid())
+  genDate  DateTime
+  key   String
+  user  User @relation(fields: [userEmail], references: [email])
+  userEmail String
 }
 
 model Uploads {

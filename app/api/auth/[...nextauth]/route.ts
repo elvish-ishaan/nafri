@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
                     if (existingUser) {
                         const isPasswordValid = await bcrypt.compare(password, existingUser.password || '');
                         if (isPasswordValid) {
-                            return { id: existingUser.id, email: existingUser.email };
+                            return { id: existingUser.id, email: existingUser.email, name: existingUser.name };
                         }
                         throw new Error('Invalid credentials');
                     }
@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
                         data: { email, password: hashedPassword },
                     });
 
-                    return { id: newUser.id, email: newUser.email };
+                    return { id: newUser.id, email: newUser.email,name: newUser.name };
                 } catch (error) {
                     console.error('Error in authorize:', error);
                     throw new Error('Unable to log in');
@@ -77,9 +77,11 @@ export const authOptions: NextAuthOptions = {
         secret: process.env.NEXTAUTH_SECRET,
     },
     callbacks: {
+        //return the neccessary information you gonna use for session data eg user email, name , id etc
         async session({ session, token }: SessionParams): Promise<Session> {
             if (session?.user && token.email) {
                 session.user.email = token.email as string;
+                session.user.name = token.name as string;
             }
             return session;
         },

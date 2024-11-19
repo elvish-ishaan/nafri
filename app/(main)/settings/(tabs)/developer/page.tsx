@@ -1,38 +1,68 @@
-'use client';  // Ensures this component is client-side
+'use client'; // Ensures this component is client-side
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button'; // Assuming you're using ShadCN UI
 import { Key, PlusCircle, Trash2 } from 'lucide-react';
+import { deleteApiKeyById, generateApiKey, getDevApiKeys } from '@/app/actions/dev';
+import { format } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
-// Mock data for generated API keys
-const mockApiKeys = [
-  { id: 1, key: 'abc123xyz', createdAt: '2024-11-17' },
-  { id: 2, key: 'def456uvw', createdAt: '2024-11-16' },
-];
+interface ApiKey {
+  id: string;
+  genDate: Date;
+  key: string;
+  userEmail: string;
+}
+
+// Format the date into a simple format: 'MMM dd, yyyy HH:mm'
+const formatDate = (date: Date): string => format(date, 'MMM dd, yyyy HH:mm');
 
 const Page: React.FC = () => {
-//   const [apiKey, setApiKey] = useState('');
-  const [apiKeys, setApiKeys] = useState(mockApiKeys);
+  const [apiKeys, setApiKeys] = useState<ApiKey[] | []>([]);
   const [loading, setLoading] = useState(false);
 
-  // Generate a new API key (mock implementation)
-  const generateApiKey = () => {
+  // Fetch all API keys on component mount
+  useEffect(() => {
+    const fetchApiKeys = async () => {
+      const res = await getDevApiKeys();
+      setApiKeys(res.data || []);
+    };
+    fetchApiKeys();
+  }, []);
+
+  // Generate a new API key
+  const handleGenerateApiKey = async () => {
     setLoading(true);
-    // Mock delay to simulate key generation
-    setTimeout(() => {
-      const newKey = {
-        id: apiKeys.length + 1,
-        key: Math.random().toString(36).substring(2, 15), // Random key generation
-        createdAt: new Date().toLocaleDateString(),
-      };
-      setApiKeys((prevKeys) => [...prevKeys, newKey]);
+    try {
+      const resKey = await generateApiKey();
+      if (resKey?.success) {
+        setApiKeys((prevKeys) => [...prevKeys, resKey?.data]);
+        toast({ title: 'Success', description: 'API key generated successfully.' });
+      } else {
+        toast({ title: 'Error', description: 'Failed to generate API key.', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error generating API key:', error);
+      toast({ title: 'Unexpected Error', description: 'Please try again later.', variant: 'destructive' });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   // Delete an API key
-  const deleteApiKey = (id: number) => {
-    setApiKeys(apiKeys.filter((key) => key.id !== id));
+  const handleDeleteApiKey = async (id: string) => {
+    try {
+      const res = await deleteApiKeyById(id);
+      if (res.success) {
+        setApiKeys((prev) => prev.filter((key) => key.id !== id));
+        toast({ title: 'Success', description: 'API key deleted successfully.' });
+      } else {
+        toast({ title: 'Error', description: 'Failed to delete API key.', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error deleting API key:', error);
+      toast({ title: 'Unexpected Error', description: 'Please try again later.', variant: 'destructive' });
+    }
   };
 
   return (
@@ -46,7 +76,7 @@ const Page: React.FC = () => {
         <div className="flex space-x-4">
           <Button
             size="sm"
-            onClick={generateApiKey}
+            onClick={handleGenerateApiKey}
             disabled={loading}
             className="bg-green-600"
           >
@@ -68,15 +98,15 @@ const Page: React.FC = () => {
               >
                 <div className="flex items-center space-x-2">
                   <Key size={20} className="text-gray-300" />
-                  <span className="text-sm">{apiKey.key}</span>
+                  <span className="text-sm">{apiKey?.key}</span>
                 </div>
                 <div className="flex space-x-4">
-                  <span className="text-xs text-gray-400">{apiKey.createdAt}</span>
+                  <span className="text-xs text-gray-400">{formatDate(new Date(apiKey.genDate))}</span>
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-red-500"
-                    onClick={() => deleteApiKey(apiKey.id)}
+                    onClick={() => handleDeleteApiKey(apiKey.id)}
                   >
                     <Trash2 size={16} />
                     Delete
@@ -88,18 +118,6 @@ const Page: React.FC = () => {
         ) : (
           <p className="text-sm text-gray-400">No API keys generated yet.</p>
         )}
-      </div>
-
-      {/* Additional settings can be added here */}
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold">Other Settings</h3>
-        <p className="text-sm text-gray-400">Manage additional settings for your developer account.</p>
-        <div className="flex space-x-4 mt-4">
-          {/* Example additional button */}
-          <Button variant="outline" size="sm" className="text-gray-300">
-            Reset API Limits
-          </Button>
-        </div>
       </div>
     </div>
   );

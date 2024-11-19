@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 async function deleteAllData() {
   try {
     // Delete data from dependent tables first to avoid foreign key constraint issues
+    await prisma.apiKeys.deleteMany({})
     await prisma.uploads.deleteMany({});
     await prisma.user.deleteMany({});
 

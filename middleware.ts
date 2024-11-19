@@ -23,7 +23,7 @@ export async function middleware(req: NextRequest) {
   
   // Redirect unauthenticated users trying to access protected routes
   if (!token) {
-    return NextResponse.redirect(new URL('/', req.url)) // Redirects to landing page
+    return NextResponse.redirect(new URL('/auth/sign-in', req.url)) // Redirects to landing page
   }
 
   // Allow access for authenticated users

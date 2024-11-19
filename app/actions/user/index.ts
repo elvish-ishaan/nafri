@@ -64,7 +64,7 @@ export async function updateProfile(profileData: {
         });
 
         if (!user) {
-            return { status: 404, error: "User not found" };
+            return { success: false, error: "User not found" };
         }
 
         // If oldPassword is provided, verify it matches the hashed password
@@ -92,16 +92,16 @@ export async function updateProfile(profileData: {
                 ...(hashedPassword && { password: hashedPassword }),
             },
         });
-
+       //fix tigger email to notify user about an update
         return {
-            status: 200,
+            success: true,
             message: "Profile updated successfully",
             data: updatedProfile,
         };
     } catch (error) {
         console.error("Error updating profile:", error);
         return {
-            status: 500,
+            success: false,
             error: "Failed to update profile. Please try again later.",
         };
     }

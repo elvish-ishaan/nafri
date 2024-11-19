@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eclipse, LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import Error from 'next/error';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,7 +33,6 @@ export default function LoginPage() {
         password: formValues.password,
         callbackUrl,
       });
-
       setLoading(false);
 
       if (!res?.error) {
@@ -76,6 +74,8 @@ export default function LoginPage() {
             <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
             <CardDescription className="text-center">
               Enter your email and password to sign in
+              {/* fix this error showing */}
+              {error && <p className=' text-red-600'>{error}</p>} 
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
