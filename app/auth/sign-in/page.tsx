@@ -19,7 +19,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  //specify where to redirect the user after login
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +32,7 @@ export default function LoginPage() {
         redirect: false,
         email: formValues.email,
         password: formValues.password,
+        //give a call back url to redirect user
         callbackUrl,
       });
       setLoading(false);

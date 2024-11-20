@@ -9,24 +9,47 @@ import { toast } from '@/hooks/use-toast';
 
 interface ApiKey {
   id: string;
-  genDate: Date;
+  genDate: string | Date;
   key: string;
   userEmail: string;
 }
 
-// Format the date into a simple format: 'MMM dd, yyyy HH:mm'
-const formatDate = (date: Date): string => format(date, 'MMM dd, yyyy HH:mm');
+// Format the date into a readable format: 'MMM dd, yyyy HH:mm'
+const formatDate = (date: string | Date): string => {
+  try {
+    const validDate = date instanceof Date ? date : new Date(date);
+
+    if (isNaN(validDate.getTime())) {
+      return 'Invalid date';
+    }
+
+    return format(validDate, 'MMM dd, yyyy HH:mm');
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
+};
 
 const Page: React.FC = () => {
-  const [apiKeys, setApiKeys] = useState<ApiKey[] | []>([]);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch all API keys on component mount
   useEffect(() => {
     const fetchApiKeys = async () => {
-      const res = await getDevApiKeys();
-      setApiKeys(res.data || []);
+      try {
+        const res = await getDevApiKeys();
+        if (res?.data) {
+          setApiKeys(res.data);
+        } else {
+          toast({ title: 'Error', description: 'Failed to fetch API keys.', variant: 'destructive' });
+        }
+      } catch (error) {
+        console.error('Error fetching API keys:', error);
+        toast({ title: 'Unexpected Error', description: 'Failed to load API keys.', variant: 'destructive' });
+      }
     };
+
     fetchApiKeys();
   }, []);
 
@@ -35,9 +58,16 @@ const Page: React.FC = () => {
     setLoading(true);
     try {
       const resKey = await generateApiKey();
-      if (resKey?.success) {
-        setApiKeys((prevKeys) => [...prevKeys, resKey?.data]);
-        toast({ title: 'Success', description: 'API key generated successfully.' });
+
+      if (resKey?.success && resKey?.genKey?.apiKeys) {
+        const newApiKey = resKey.genKey.apiKeys[resKey.genKey.apiKeys.length - 1];
+
+        if (newApiKey) {
+          setApiKeys((prevKeys) => [...prevKeys, newApiKey]);
+          toast({ title: 'Success', description: 'API key generated successfully.' });
+        } else {
+          toast({ title: 'Error', description: 'No new API key found.', variant: 'destructive' });
+        }
       } else {
         toast({ title: 'Error', description: 'Failed to generate API key.', variant: 'destructive' });
       }
@@ -72,13 +102,15 @@ const Page: React.FC = () => {
       {/* API Key Generation Section */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold">Generate API Key</h3>
-        <p className="text-sm text-gray-400 mb-4">Generate a new API key to access your application programmatically.</p>
+        <p className="text-sm text-gray-400 mb-4">
+          Generate a new API key to access your application programmatically.
+        </p>
         <div className="flex space-x-4">
           <Button
             size="sm"
             onClick={handleGenerateApiKey}
             disabled={loading}
-            className="bg-green-600"
+            className="bg-green-600 flex items-center"
           >
             {loading ? 'Generating...' : 'Generate New Key'}
             <PlusCircle className="ml-2" />
@@ -98,14 +130,14 @@ const Page: React.FC = () => {
               >
                 <div className="flex items-center space-x-2">
                   <Key size={20} className="text-gray-300" />
-                  <span className="text-sm">{apiKey?.key}</span>
+                  <span className="text-sm">{apiKey.key}</span>
                 </div>
-                <div className="flex space-x-4">
-                  <span className="text-xs text-gray-400">{formatDate(new Date(apiKey.genDate))}</span>
+                <div className="flex space-x-4 items-center">
+                  <span className="text-xs text-gray-400">{formatDate(apiKey.genDate)}</span>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-red-500"
+                    className="text-red-500 flex items-center"
                     onClick={() => handleDeleteApiKey(apiKey.id)}
                   >
                     <Trash2 size={16} />
