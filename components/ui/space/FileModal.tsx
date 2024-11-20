@@ -8,6 +8,7 @@ import React from "react";
 import ReactPlayer from "react-player";
 import FileModalNav from "../nav/FileModalNav";
 import Loading from "@/app/(main)/dashboard/loading";
+import PdfViewer from "../renders/PdfViewer";
 
 export function FileModal({
   open,
@@ -29,7 +30,10 @@ export function FileModal({
     starred: boolean;
   };
 }) {
-  console.log(fileUrl,'this is file url')
+  
+  const isImage = ["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(fileDetails.fileType || "");
+  const isVideo = ["mp4", "webm", "ogg"].includes(fileDetails.fileType || "");
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="w-full h-screen max-w-full mx-auto p-4">
@@ -45,21 +49,28 @@ export function FileModal({
         {
           loading ? <Loading/> :
           <div className="flex-grow flex items-center justify-center">
-          {fileDetails?.fileType === "jpg" && (
+          { isImage && (
             <Image
               src={fileUrl}
-              alt={fileDetails.fileKey}
+              alt={fileDetails?.fileKey}
               layout="responsive"
               width={1000} // Set a large width for better scaling
               height={1000} // Set a large height for better scaling
               className="object-contain w-full h-auto max-h-[80vh]"
             />
           )}
-          {fileDetails?.fileType === "mp4" && (
+          { isVideo && (
             <div className="w-full h-full max-h-[80vh] max-w-full">
               <ReactPlayer url={fileUrl} controls={true} width="100%" height="100%" />
             </div>
           )}
+          {
+            fileDetails?.fileType === 'pdf' && (
+              <div className="w-full h-full max-h-[80vh] max-w-full">
+               <PdfViewer fileUrl={fileUrl}/>
+            </div>
+            )
+          }
         </div>
         }
       </DialogContent>
