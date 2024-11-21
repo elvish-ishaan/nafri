@@ -19,7 +19,7 @@ import { TooltipContent } from "../tooltip";
 import { Separator } from "../separator";
 import { Input } from "@/components/ui/input";
 
-interface FileMetaData {
+export interface FileMetaData {
   id: string;
   fileKey: string;
   uploadDate: string;
@@ -30,7 +30,7 @@ interface FileMetaData {
 
 export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [uploadFiles, setUploadFiles] = useState<FileMetaData[]>(filesData);
+  const [uploadFiles, setUploadFiles] = useState<FileMetaData[] | []>(filesData);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileMetaData | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -55,7 +55,7 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
     try {
       const res = await deleteFileAws(fileKey, fileId);
       if (res.success) {
-        setUploadFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+        setUploadFiles((prevFiles) => prevFiles?.filter((file) => file.id !== fileId));
         toast({
           title: "File Deleted",
         });
@@ -73,7 +73,7 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
   };
 
   // Filter files based on the search query
-  const filteredFiles = uploadFiles.filter((file) =>
+  const filteredFiles = uploadFiles?.filter((file) =>
     file.fileKey.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -107,14 +107,14 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredFiles.length === 0 ? (
+          {filteredFiles?.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="text-center">
                 Sorry, no files found.
               </TableCell>
             </TableRow>
           ) : (
-            filteredFiles.map((metaData) => (
+            filteredFiles?.map((metaData) => (
               <TableRow
                 key={metaData.id}
                 onDoubleClick={() => handleViewClk(metaData.fileKey)}

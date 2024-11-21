@@ -1,44 +1,52 @@
-import { fetchSignedUrl } from '@/app/actions/uploads'
+'use client'
+
+import { getShareFile } from '@/app/actions/uploads'
 import { FileModal } from '@/components/ui/space/FileModal'
-import prisma from '@/prisma/prismaClient'
-import { getServerSession } from 'next-auth'
-import React from 'react'
+import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
 
-const page = async ({ params }: { params: { fileId: string } }) => {
-    const session = await getServerSession()
-    if(!session){
-        return {
-            success: false,
-            message: "user unauthenticated"
-        }
-    }
-    let file;
-    let signedUrl;
-    try {
-        file = await prisma.uploads.findUnique({
-            where: {
-                id: params?.fileId
-            }
-        })
-        if(!file){
-            console.log('file not found')
-            return
-        }
-        signedUrl = await fetchSignedUrl(file?.fileKey || '')
-    } catch (error) {
-        console.log(error,'error in fetching file shared')
+interface FileDetails {
+  id: string
+  fileKey: string
+  uploadDate: string
+  starred: boolean | null
+  fileType: string
+  userEmail: string
+  deleted: boolean
+  deleteDate: Date | null
+}
+
+const Page = ({ params }: { params: { fileId: string } }) => {
+  const [showModal, setShowModal] = useState<boolean>(true)
+  const [fileUrl, setFileUrl] = useState<string | undefined>()
+  const [fileDetails, setFileDetails] = useState<FileDetails | undefined>()
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchSignedUrl = async () => {
+      const res = await getShareFile(params?.fileId)
+      if (res?.success) {
+        setFileUrl(res.signedUrl?.signedUrl || '')
+        setFileDetails(res.fileDetails) // Type is now correctly inferred
+      }
     }
 
-    //set interval to auto close the modal 
-    let modalOpen = true
-    setInterval(() => {
-        modalOpen= false
-    }, 30*1000);
+    fetchSignedUrl()
+  }, [params.fileId])
+
   return (
     <div>
-        <FileModal open={modalOpen} fileUrl={signedUrl?.signedUrl || ''} fileDetails={file || null}/>
+      <FileModal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          router.push('/dashboard')
+        }}
+        fileUrl={fileUrl || ''}
+        fileDetails={fileDetails || null}
+      />
     </div>
   )
 }
 
-export default page
+export default Page

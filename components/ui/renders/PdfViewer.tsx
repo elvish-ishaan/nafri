@@ -8,7 +8,6 @@ const PdfViewer = ({ fileUrl }: { fileUrl: string }) => {
         width="100%"
         height="100%"
         style={{ border: 'none' }}
-        title="PDF Viewer"
       />
     </div>
   );

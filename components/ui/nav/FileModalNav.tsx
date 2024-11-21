@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { DialogDescription, DialogTitle } from '../dialog'
 import { Button } from '../button'
-import { ArchiveRestore, Download, Plus, Redo2, Share2, Star, Undo2 } from 'lucide-react'
+import {  Download, Plus, Redo2, Share2, Star, } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { addFileToSpace, addToStarred, restoreFile } from '@/app/actions/uploads'
 import { useSession } from 'next-auth/react'
@@ -99,7 +99,8 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
              {
               data?.user?.email !== fileOwner && <Button onClick={ () => addToSpace(fileId)}>
                 {
-                  addedFileStatus ? <span><Plus/>Add To Space</span> : <span>Added</span>
+                  !addedFileStatus ? <span className=' flex gap-2'><Plus/>Add To Space</span> :
+                   <span className={addedFileStatus && 'text-green-600'}>Added</span>
                 }
               </Button>
              }

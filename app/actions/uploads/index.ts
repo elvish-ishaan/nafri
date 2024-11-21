@@ -389,3 +389,54 @@ export const restoreFile = async (fileId: string) => {
     console.log(error,'error in restoring file to db')
   }
 }
+
+//get shared file
+export const getShareFile = async (fileId: string) => {
+  try {
+    const session = await getServerSession()
+    if(!session){
+        return {
+            success: false,
+            message: "user unauthenticated"
+        }
+    }
+    let file;
+    let signedUrl;
+    try {
+        file = await prisma.uploads.findUnique({
+            where: {
+                id: fileId
+            }
+        })
+        if(!file){
+            console.log('file not found')
+            return{
+              success: false,
+              message: 'file not found'
+            }
+        }
+        signedUrl = await fetchSignedUrl(file?.fileKey || '')
+        if(!signedUrl){
+          return {
+            success: false,
+            message: 'cant get signed url of file'
+          }
+        }
+        //return res
+        return {
+          success: true,
+          message: 'file signed url fetch',
+          signedUrl,
+          fileDetails: file
+        }
+    } catch (error) {
+        console.log(error,'error in fetching file shared')
+    }
+  } catch (error) {
+    console.log(error,'error in getting shared file')
+    return {
+      success: false,
+      message: 'internal server error'
+    }
+  }
+}

@@ -1,4 +1,5 @@
-"use client"
+'use client';
+
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -6,14 +7,15 @@ import { Plus } from 'lucide-react';
 import { Modal } from './Modal';
 import { uploadFileAws } from '@/app/actions/uploads';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '../input';
 
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
-  const [uploadLoading, setUploadLoading] = useState<boolean>(false)
-  const { toast } = useToast()
+  const [uploadLoading, setUploadLoading] = useState<boolean>(false);
+  const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -27,43 +29,56 @@ const UploadBtn: React.FC = () => {
   };
 
   const handleUpload = async () => {
-    const formData = new FormData()
-    formData.append('file', fileUpload)        //fix this 
+    if (!fileUpload) {
+      toast({
+        title: 'No file selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileUpload);
+
     try {
-      setUploadLoading(true)
-      const upload = await uploadFileAws(formData)
-      setUploadLoading(false)
-      if(upload?.success){
+      setUploadLoading(true);
+      const upload = await uploadFileAws(formData);
+      setUploadLoading(false);
+
+      if (upload?.success) {
         toast({
-          title: 'uploaded successfully',
-        })
-      }else{
+          title: 'Uploaded successfully',
+        });
+      } else {
         toast({
-          title: upload?.message
-        })
+          title: upload?.message || 'Upload failed',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
-      console.log(error,'error in uploading')
+      console.error('Error in uploading', error);
       toast({
-        title:'sorry cant upload file',
-        variant: 'destructive'
-      })
+        title: 'Sorry, can’t upload the file',
+        variant: 'destructive',
+      });
     }
     setShowUploadModal(false);
+    setFileUpload(null); // Reset file state after upload
   };
 
   return (
     <div className="relative inline-block">
       {showUploadModal && (
         <Modal
-          title="Choose File To Upload"
-          description="choose file you want to upload to the cloud"
+          onClose={() => setShowUploadModal(false)}
+          title="Choose File to Upload"
+          description="Choose the file you want to upload to the cloud"
           open={showUploadModal}
-          onClickFn={ uploadLoading ? ()=>{} : handleUpload}
-          footerBtn={ uploadLoading ? 'Loading' : 'Upload'}
+          footerBtn={uploadLoading ? 'Loading...' : 'Upload'}
+          onAction={uploadLoading ? () => {} : handleUpload}
         >
           <div>
-            <input type="file" onChange={handleFileChange} />
+            <Input ref={fileInputRef} type="file" onChange={handleFileChange} />
           </div>
         </Modal>
       )}
@@ -71,7 +86,9 @@ const UploadBtn: React.FC = () => {
         <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
           <TooltipTrigger asChild>
             <Button onClick={() => setShowTooltip(!showTooltip)} variant="secondary">
-              <span className="text-green-600 text-xl"><Plus /></span>
+              <span className="text-green-600 text-xl">
+                <Plus />
+              </span>
               <span className="text-xl">Upload</span>
             </Button>
           </TooltipTrigger>
@@ -80,7 +97,7 @@ const UploadBtn: React.FC = () => {
               <li
                 className="px-4 py-2 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => {
-                  setShowUploadModal(true)
+                  setShowUploadModal(true);
                   setShowTooltip(false);
                 }}
               >
@@ -90,7 +107,6 @@ const UploadBtn: React.FC = () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {/* {uploadStatus && <p className="mt-2 text-sm text-gray-600">{uploadStatus}</p>} */}
     </div>
   );
 };

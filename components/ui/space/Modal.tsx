@@ -1,4 +1,5 @@
-"use client"
+'use client'
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,16 +13,25 @@ import React from "react";
 
 interface ModalProps {
   open: boolean;
-  onClickFn: () => void;
+  onClose: () => void; // Separate function for handling modal close
+  onAction?: () => void; // Optional action for button click
   title: string;
   description: string;
   children: React.ReactNode;
   footerBtn: string;
 }
 
-export function Modal({ open, onClickFn, title, description, children, footerBtn }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  onAction,
+  title,
+  description,
+  children,
+  footerBtn,
+}: ModalProps) {
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClickFn()}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -29,7 +39,12 @@ export function Modal({ open, onClickFn, title, description, children, footerBtn
         </DialogHeader>
         {children}
         <DialogFooter>
-          <Button type="button" onClick={onClickFn}>{footerBtn}</Button>
+          <Button
+            type="button"
+            onClick={onAction}
+          >
+            {footerBtn}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

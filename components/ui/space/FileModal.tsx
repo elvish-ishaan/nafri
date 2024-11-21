@@ -31,8 +31,8 @@ export function FileModal({
   };
 }) {
   
-  const isImage = ["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(fileDetails.fileType || "");
-  const isVideo = ["mp4", "webm", "ogg"].includes(fileDetails.fileType || "");
+  const isImage = ["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(fileDetails?.fileType || "");
+  const isVideo = ["mp4", "webm", "ogg"].includes(fileDetails?.fileType || "");
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -66,7 +66,7 @@ export function FileModal({
           )}
           {
             fileDetails?.fileType === 'pdf' && (
-              <div className="w-full h-full max-h-[80vh] max-w-full">
+              <div className="w-full h-full max-w-full">
                <PdfViewer fileUrl={fileUrl}/>
             </div>
             )
