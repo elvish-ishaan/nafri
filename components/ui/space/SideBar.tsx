@@ -45,7 +45,7 @@ export default function SideBar() {
       title: 'cant fetch user data'
     })
    }
-  },[])
+  },[toast])
   return (
     <div className="flex h-screen flex-col text-foreground w-64 border-foreground-muted border-r-2">
       {/* Sidebar Header */}
