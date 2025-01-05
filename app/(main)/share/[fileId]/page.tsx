@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { getShareFile } from '@/app/actions/uploads'
 import { FileModal } from '@/components/ui/space/FileModal'
@@ -19,7 +19,7 @@ interface FileDetails {
 const Page = ({ params }: { params: { fileId: string } }) => {
   const [showModal, setShowModal] = useState<boolean>(true)
   const [fileUrl, setFileUrl] = useState<string | undefined>()
-  const [fileDetails, setFileDetails] = useState<FileDetails | undefined>()
+  const [fileDetails, setFileDetails] = useState<FileDetails | undefined>() // Change this to `undefined`
   const router = useRouter()
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const Page = ({ params }: { params: { fileId: string } }) => {
       const res = await getShareFile(params?.fileId)
       if (res?.success) {
         setFileUrl(res.signedUrl?.signedUrl || '')
-        setFileDetails(res.fileDetails) // Type is now correctly inferred
+        setFileDetails(res.fileDetails) // fileDetails can now be undefined if no data
       }
     }
 
@@ -43,7 +43,7 @@ const Page = ({ params }: { params: { fileId: string } }) => {
           router.push('/dashboard')
         }}
         fileUrl={fileUrl || ''}
-        fileDetails={fileDetails || null}
+        fileDetails={fileDetails} // fileDetails can be undefined
       />
     </div>
   )

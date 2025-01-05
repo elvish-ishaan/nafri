@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -157,7 +155,8 @@ export default function ProfileUpdate() {
         ) : (
           <>
             <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-            <Button type="submit" disabled={isLoading} onClick={handleSubmit}>
+            {/* Remove onClick from here */}
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Updating...' : 'Save Changes'}
             </Button>
           </>

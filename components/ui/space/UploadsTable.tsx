@@ -22,10 +22,10 @@ import { Input } from "@/components/ui/input";
 export interface FileMetaData {
   id: string;
   fileKey: string;
+  fileType: string;
   uploadDate: string;
   userEmail: string;
-  fileType: string,
-  starred: boolean,
+  starred: boolean | null;  // Allow null here
 }
 
 export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {

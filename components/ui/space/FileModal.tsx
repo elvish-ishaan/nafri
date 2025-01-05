@@ -1,10 +1,6 @@
-"use client";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
-import Image from "next/image";
 import React from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import Image from "next/image";
 import ReactPlayer from "react-player";
 import FileModalNav from "../nav/FileModalNav";
 import Loading from "@/app/(main)/dashboard/loading";
@@ -18,19 +14,25 @@ export function FileModal({
   loading,
 }: {
   open: boolean;
-  onClose: () => void
+  onClose: () => void;
   fileUrl: string;
   loading?: boolean;
-  fileDetails: {
+  fileDetails?: {
     fileKey: string;
     userEmail: string;
     fileType: string;
     id: string;
     uploadDate: string;
-    starred: boolean;
-  };
+    starred: boolean | null;
+  } | undefined; // Make this optional (undefined)
 }) {
-  
+  if (!fileDetails) {
+    return null; // Handle the case when fileDetails is undefined
+  }
+
+  // Default the starred field to `false` if it is `null`
+  const starred = fileDetails.starred ?? false;
+
   const isImage = ["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(fileDetails?.fileType || "");
   const isVideo = ["mp4", "webm", "ogg"].includes(fileDetails?.fileType || "");
 
@@ -38,41 +40,42 @@ export function FileModal({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="w-full h-screen max-w-full mx-auto p-4">
         {/* File Details at the Top */}
-        <FileModalNav fileKey={fileDetails?.fileKey} 
-        uploadDate={fileDetails?.uploadDate} fileId={fileDetails?.id}
-        starred={fileDetails?.starred}
-        fileOwner={fileDetails?.userEmail}
-        fileUrl={fileUrl}
+        <FileModalNav
+          fileKey={fileDetails.fileKey}
+          uploadDate={fileDetails.uploadDate}
+          fileId={fileDetails.id}
+          starred={starred} // Always passing a boolean
+          fileOwner={fileDetails.userEmail}
+          fileUrl={fileUrl}
         />
 
         {/* Media Container */}
-        {
-          loading ? <Loading/> :
+        {loading ? (
+          <Loading />
+        ) : (
           <div className="flex-grow flex items-center justify-center">
-          { isImage && (
-            <Image
-              src={fileUrl}
-              alt={fileDetails?.fileKey}
-              layout="responsive"
-              width={1000} // Set a large width for better scaling
-              height={1000} // Set a large height for better scaling
-              className="object-contain w-full h-auto max-h-[80vh]"
-            />
-          )}
-          { isVideo && (
-            <div className="w-full h-full max-h-[80vh] max-w-full">
-              <ReactPlayer url={fileUrl} controls={true} width="100%" height="100%" />
-            </div>
-          )}
-          {
-            fileDetails?.fileType === 'pdf' && (
+            {isImage && (
+              <Image
+                src={fileUrl}
+                alt={fileDetails.fileKey}
+                layout="responsive"
+                width={1000}
+                height={1000}
+                className="object-contain w-full h-auto max-h-[80vh]"
+              />
+            )}
+            {isVideo && (
+              <div className="w-full h-full max-h-[80vh] max-w-full">
+                <ReactPlayer url={fileUrl} controls={true} width="100%" height="100%" />
+              </div>
+            )}
+            {fileDetails.fileType === "pdf" && (
               <div className="w-full h-full max-w-full">
-               <PdfViewer fileUrl={fileUrl}/>
-            </div>
-            )
-          }
-        </div>
-        }
+                <PdfViewer fileUrl={fileUrl} />
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
