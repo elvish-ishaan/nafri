@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && prisma generate",
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node prisma/seed.mjs",
@@ -42,6 +42,7 @@
     "react-dom": "^18",
     "react-pdf": "^9.1.1",
     "react-player": "^2.16.0",
+    "sharp": "^0.33.5",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.2"
