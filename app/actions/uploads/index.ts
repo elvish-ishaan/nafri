@@ -1,7 +1,7 @@
 "use server"
 import { Bucket, s3 } from "@/app/configs/awsConfig";
 import prisma from "@/prisma/prismaClient";
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { contentType } from "@/lib/contentTypes";

@@ -1,6 +1,6 @@
 export default function About() {
     return (
-      <div className=" text-gray-300 min-h-screen py-16 px-6 sm:px-12 lg:px-20">
+      <div className=" text-gray-300 min-h-screen  px-6 sm:px-12 lg:px-20">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <header className="text-center mb-16">

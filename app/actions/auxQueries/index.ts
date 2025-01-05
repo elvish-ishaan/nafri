@@ -1,3 +1,5 @@
+"use server"
+
 import prisma from '@/prisma/prismaClient';
 import { getServerSession } from "next-auth"; // Import your session helper if needed
 
@@ -26,12 +28,9 @@ export async function saveContactMessage(formData: FormData) {
     }
 
     // Save to database using Prisma
-    const savedMessage = await prisma.contactMessage.create({
+    await prisma.contactMessage.create({
       data: { name, email, message },
     });
-
-    console.log("Message saved:", savedMessage);
-
     return {
       success: true,
       message: "Message sent successfully!",

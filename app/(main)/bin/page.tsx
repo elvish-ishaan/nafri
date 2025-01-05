@@ -35,7 +35,7 @@ const Page =  () => {
         }
 
         fetchBinFiles()
-    }, []) 
+    }, [binFiles, toast]) 
 
   return (
     <section>

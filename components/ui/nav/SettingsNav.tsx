@@ -1,7 +1,7 @@
 'use client';  // Ensures this component is client-side
 
 import React from 'react';
-import { User, Box, Code, Shield } from 'lucide-react';
+import { User, Code, } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';  // Import usePathname for App Directory
 

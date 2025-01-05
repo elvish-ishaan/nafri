@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Page() {
   const { data: session, update: updateSession } = useSession();
-  console.log(session,'this is session')
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({

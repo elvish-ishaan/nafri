@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Home, Clock, Star, Share2, Trash2, Settings, LogOut, Cloud } from 'lucide-react';
+import { Home, Star, Trash2, Settings, LogOut, Cloud } from 'lucide-react';
 import UploadBtn from './Upload';
 import StorageCells from './StorageCells';
 import { Separator } from '../separator';

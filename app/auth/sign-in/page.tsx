@@ -6,8 +6,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eclipse, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import googleLogo from '@/app/assets/main/googleLogo.png'
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,9 +44,9 @@ export default function LoginPage() {
       } else {
         setError('Invalid email or password');
       }
-    } catch (error: any) {
+    } catch  {
       setLoading(false);
-      setError(error.message || 'An error occurred during sign in');
+      setError('An error occurred during sign in');
     }
   };
 
@@ -138,7 +140,7 @@ export default function LoginPage() {
               {loading ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Eclipse className="mr-2 h-4 w-4" />
+                <Image src={googleLogo} width={20} height={20} alt='google'/>
               )}{' '}
               Google
             </Button>

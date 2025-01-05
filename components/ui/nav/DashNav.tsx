@@ -7,6 +7,7 @@ import {
   } from "@/components/ui/avatar"
 import { Gift, LucideHeadphones } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 const DashNav = () => {
   const { data } = useSession()
@@ -15,7 +16,7 @@ const DashNav = () => {
     <div className=' py-8 flex justify-end  w-full'>
         <div className='flex items-center gap-5 px-8'>
             <Gift/>
-            <LucideHeadphones className=' hover:text-muted-foreground transition'/>
+            <Link href={'/contactus'}><LucideHeadphones className=' hover:text-muted-foreground transition'/></Link>
             <Avatar>
              <AvatarImage src={data?.user?.image || ''} alt="@profile_url" />
              <AvatarFallback>{name}</AvatarFallback>

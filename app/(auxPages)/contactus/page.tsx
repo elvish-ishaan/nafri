@@ -24,7 +24,7 @@ export default function Contact() {
   }
 
   return (
-    <div className="text-gray-300 min-h-screen py-16 px-6 sm:px-12 lg:px-20">
+    <div className="text-gray-300 min-h-screen px-6 sm:px-12 lg:px-20">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="text-center mb-16">
@@ -40,22 +40,18 @@ export default function Contact() {
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-semibold text-white mb-2">Our Office</h2>
-              <p className="text-lg">123 YourCloud Street, TechCity, TX 12345</p>
+              <p className="text-lg">Anantnag, Jammu and Kashmir, 192201</p>
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-white mb-2">Email Us</h2>
               <p className="text-lg">
                 <a
-                  href="mailto:support@yourcloud.com"
+                  href="mailto:support@nextcloud.com"
                   className="text-blue-500 hover:underline"
                 >
-                  support@yourcloud.com
+                  support@nextcloud.com
                 </a>
               </p>
-            </div>
-            <div>
-              <h2 className="text-2xl font-semibold text-white mb-2">Call Us</h2>
-              <p className="text-lg">+1 (123) 456-7890</p>
             </div>
           </div>
 
