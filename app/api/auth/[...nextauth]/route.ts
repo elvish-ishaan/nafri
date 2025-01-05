@@ -1,29 +1,17 @@
+import { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth/next';
 import prisma from '@/prisma/prismaClient';
-import NextAuth, { NextAuthOptions, Session, User } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcrypt';
 
-// Define custom types for session callback parameters
-type SessionParams = {
-    session: Session;
-    token: JWT;
-    user: User;
-};
-
-type RedirectParams = {
-    url: string;
-    baseUrl: string;
-};
-
-// Constant for bcrypt salt rounds
 const SALT_ROUNDS = 10;
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SEC || !process.env.NEXTAUTH_SECRET) {
     throw new Error('Missing required environment variables.');
 }
 
+// NextAuth configuration
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     providers: [
@@ -61,7 +49,7 @@ export const authOptions: NextAuthOptions = {
                         data: { email, password: hashedPassword },
                     });
 
-                    return { id: newUser.id, email: newUser.email,name: newUser.name };
+                    return { id: newUser.id, email: newUser.email, name: newUser.name };
                 } catch (error) {
                     console.error('Error in authorize:', error);
                     throw new Error('Unable to log in');
@@ -77,22 +65,20 @@ export const authOptions: NextAuthOptions = {
         secret: process.env.NEXTAUTH_SECRET,
     },
     callbacks: {
-        //return the neccessary information you gonna use for session data eg user email, name , id etc
-        async session({ session, token }: SessionParams): Promise<Session> {
+        async session({ session, token }) {
             if (session?.user && token.email) {
                 session.user.email = token.email as string;
                 session.user.name = token.name as string;
             }
             return session;
         },
-        async redirect({ url, baseUrl }: RedirectParams): Promise<string> {
+        async redirect({ url, baseUrl }) {
             return url.startsWith(baseUrl) ? url : `${baseUrl}/dashboard`;
         },
     },
 };
 
-// NextAuth handler setup for Next.js API routes
-const handler = NextAuth(authOptions);
-
 // Export handlers for GET and POST requests
-export { handler as GET, handler as POST };
+const handler = NextAuth(authOptions);
+export const GET = handler;
+export const POST = handler;
