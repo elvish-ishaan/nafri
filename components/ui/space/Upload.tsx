@@ -49,6 +49,9 @@ const UploadBtn: React.FC = () => {
         toast({
           title: 'Uploaded successfully',
         });
+        //update the media list by refreshing the page
+        location.reload()
+        
       } else {
         toast({
           title: upload?.message || 'Upload failed',

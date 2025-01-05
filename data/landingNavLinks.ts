@@ -2,13 +2,13 @@
 export const landNavLinks = [
     {   
         id: 1,
-        title: 'Support',
-        path: '/support'
+        title: 'Contact',
+        path: '/contactus'
     },
     {
         id: 2,
         title: 'About',
-        path: '/about'
+        path: '/aboutus'
     },
     {
         id: 3,

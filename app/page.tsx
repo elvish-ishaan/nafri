@@ -1,12 +1,16 @@
 import { Button } from "@/components/ui/button";
+import Features from "@/components/ui/mianLanding/Features";
+import Footer from "@/components/ui/mianLanding/Footer";
 import Initials from "@/components/ui/mianLanding/Initials";
 import { MotionCards } from "@/components/ui/mianLanding/MotionCards";
+import Reviews from "@/components/ui/mianLanding/Reviews";
 import NavBar from "@/components/ui/nav/NavBar";
 
 
 export default function Home() {
   return (
     <section>
+      <div className=" min-h-screen">
       <NavBar/>
       <Initials/>
       <MotionCards/>
@@ -17,7 +21,11 @@ export default function Home() {
          <Button variant={"outline"}>Learn More</Button>
          </div>
       </div>
-      
+      </div>
+    
+    <Features/>
+    <Reviews/>
+    <Footer/>
     </section>
   );
 }

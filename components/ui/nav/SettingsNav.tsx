@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';  // Import usePathname for App Di
 const navLinks = [
   { title: 'Account', path: '/settings', icon: <User size={24} /> },
 //   { title: 'Storage', path: '/settings/storage', icon: <Box size={24} /> },
-  { title: 'Developer', path: '/settings/developer', icon: <Code size={24} /> },
+  { title: 'Developer(beta)', path: '/settings/developer', icon: <Code size={24} /> },
 //   { title: 'Security', path: '/settings/security', icon: <Shield size={24} /> },
 ];
 

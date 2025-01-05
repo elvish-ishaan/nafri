@@ -121,11 +121,11 @@ export async function deleteApiKeyById(apiKeyId: string) {
       success: true,
       message: 'API key deleted successfully.',
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting API key:', error);
     return {
       success: false,
-      message: error.message || 'Failed to delete API key.',
+      message: 'Failed to delete API key.',
     };
   }
 }
