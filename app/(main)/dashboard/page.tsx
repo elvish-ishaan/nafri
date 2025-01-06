@@ -1,4 +1,4 @@
-export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic';
 
 import { fetchAllUploads } from '@/app/actions/uploads'
 import { UploadsTable } from '@/components/ui/space/UploadsTable'
