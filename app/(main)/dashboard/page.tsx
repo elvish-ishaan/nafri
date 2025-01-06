@@ -1,3 +1,5 @@
+export const revalidate = 60; // Revalidate every 60 seconds
+
 import { fetchAllUploads } from '@/app/actions/uploads'
 import { UploadsTable } from '@/components/ui/space/UploadsTable'
 import React from 'react'
