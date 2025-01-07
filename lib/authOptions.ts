@@ -32,8 +32,10 @@ export const authOptions: NextAuthOptions = {
                 const { email, password } = credentials;
 
                 try {
+                    //find if there is existing user
                     const existingUser = await prisma.user.findUnique({ where: { email } });
-
+ 
+                    //if user exists compare password
                     if (existingUser) {
                         const isPasswordValid = await bcrypt.compare(password, existingUser.password || '');
                         if (isPasswordValid) {
@@ -42,7 +44,7 @@ export const authOptions: NextAuthOptions = {
                         throw new Error('Invalid credentials');
                     }
 
-                    // Create a new user
+                    //if user does not exist, Create a new user
                     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
                     const newUser = await prisma.user.create({
                         data: { email, password: hashedPassword },

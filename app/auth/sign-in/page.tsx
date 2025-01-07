@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { LoaderCircle } from 'lucide-react';
+import { Cloud, LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import googleLogo from '@/app/assets/main/googleLogo.png';
 import Image from 'next/image';
@@ -66,8 +66,12 @@ function LoginPageContent() {
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center"
         style={{ backgroundImage: "url('/login-image.jpg')" }}
       >
-        <div className="flex items-center justify-center w-full h-full bg-black bg-opacity-50">
-          <h1 className="text-4xl font-bold text-white">Welcome Back!</h1>
+        <div className="flex flex-col items-center justify-center w-full h-full bg-black bg-opacity-50">
+          <Cloud size={100}/>
+          <h1 className="text-4xl font-bold text-white">Welcome</h1>
+          <p className="text-gray-400 text-center mt-2">
+            Sign in to access your dashboard, manage your settings, and continue where you left off.
+          </p>
         </div>
       </div>
 
@@ -144,11 +148,11 @@ function LoginPageContent() {
           <CardFooter>
             <p className="px-8 text-center text-sm text-muted-foreground">
               By clicking continue, you agree to our{' '}
-              <a href="/terms" className="underline underline-offset-4 hover:text-primary">
+              <a href="/termsofservice" className="underline underline-offset-4 hover:text-primary">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="/privacy" className="underline underline-offset-4 hover:text-primary">
+              <a href="/privacy-policy" className="underline underline-offset-4 hover:text-primary">
                 Privacy Policy
               </a>
               .

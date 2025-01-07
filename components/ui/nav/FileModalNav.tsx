@@ -39,7 +39,7 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
     
     //handling share button
     const handleShare = (fileId: string) => {
-       const baseUrl = process.env.BASE_URL || 'http://localhost:3000'   //fix this
+       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
        navigator.clipboard.writeText( baseUrl + "/share" + "/" + fileId)
        setCopySatus(true)
        setInterval(() => {

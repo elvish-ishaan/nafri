@@ -1,5 +1,5 @@
 
-import { ShieldCheck, Globe, Share, Cloud, Layers, Settings } from 'lucide-react';
+import { ShieldCheck, Globe, Share, Cloud, Layers, Settings, Terminal } from 'lucide-react';
 
 export default function Features() {
   return (
@@ -14,9 +14,10 @@ export default function Features() {
           {/* Secure */}
           <div className="flex flex-col items-center p-6 bg-gray-800 rounded-lg">
             <ShieldCheck className="w-12 h-12 text-blue-500 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Secure</h3>
+            <h3 className="text-xl font-semibold mb-2">Powered by AWS Security</h3>
             <p className="text-gray-400 text-center">
-              Your files are encrypted and protected, ensuring maximum privacy and security.
+            Your files are encrypted and securely stored using advanced AWS cloud
+            infrastructure.
             </p>
           </div>
 
@@ -47,14 +48,17 @@ export default function Features() {
             </p>
           </div>
 
-          {/* Version History */}
+          {/* devlopers */}
           <div className="flex flex-col items-center p-6 bg-gray-800 rounded-lg">
-            <Layers className="w-12 h-12 text-pink-500 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Version History</h3>
-            <p className="text-gray-400 text-center">
-              Retrieve previous versions of your files whenever needed.
-            </p>
-          </div>
+           <Terminal className="w-12 h-12 text-green-500 mb-4" />
+           <h3 className="text-xl font-semibold mb-2">Developer Tools</h3>
+           <p className="text-gray-400 text-center">
+           Easily integrate our APIs to manage and optimize
+            assets with robust SDKs and expert support.
+           </p>
+         </div>
+
+
 
           {/* Customizable Settings */}
           <div className="flex flex-col items-center p-6 bg-gray-800 rounded-lg">

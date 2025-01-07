@@ -143,7 +143,7 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
   // try {
   //   //first delete file from aws
   //    await s3.send(new DeleteObjectCommand({ 
-  //     Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME,
+  //     Bucket: process.env.AWS_BUCKET_NAME,
   //      Key: toDelfileKey }));
   // } catch (error) {
   //   console.log(error,'error in del obj aws')
