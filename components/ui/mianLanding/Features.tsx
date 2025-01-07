@@ -1,5 +1,5 @@
 
-import { ShieldCheck, Globe, Share, Cloud, Layers, Settings, Terminal } from 'lucide-react';
+import { ShieldCheck, Globe, Share, Cloud, Settings, Terminal } from 'lucide-react';
 
 export default function Features() {
   return (
