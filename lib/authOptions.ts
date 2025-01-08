@@ -1,5 +1,4 @@
-// app/api/auth/[...nextauth]/authOptions.ts
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcrypt';
@@ -24,7 +23,7 @@ export const authOptions: NextAuthOptions = {
                 email: { label: 'Email', type: 'text', placeholder: 'Enter your email' },
                 password: { label: 'Password', type: 'password', placeholder: 'Enter your password' },
             },
-            async authorize(credentials) {
+            async authorize(credentials): Promise<User | null> {
                 if (!credentials) {
                     throw new Error('Missing email or password');
                 }
@@ -32,10 +31,7 @@ export const authOptions: NextAuthOptions = {
                 const { email, password } = credentials;
 
                 try {
-                    //find if there is existing user
                     const existingUser = await prisma.user.findUnique({ where: { email } });
- 
-                    //if user exists compare password
                     if (existingUser) {
                         const isPasswordValid = await bcrypt.compare(password, existingUser.password || '');
                         if (isPasswordValid) {
@@ -44,7 +40,6 @@ export const authOptions: NextAuthOptions = {
                         throw new Error('Invalid credentials');
                     }
 
-                    //if user does not exist, Create a new user
                     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
                     const newUser = await prisma.user.create({
                         data: { email, password: hashedPassword },
@@ -66,14 +61,35 @@ export const authOptions: NextAuthOptions = {
         secret: process.env.NEXTAUTH_SECRET,
     },
     callbacks: {
-        async session({ session, token }) {
+        async signIn({ user, account, profile }): Promise<boolean> {
+            console.log(account)
+            if (user?.email) {
+                try {
+                    const existingUser = await prisma.user.findUnique({ where: { email: user.email } });
+                    if (!existingUser) {
+                        await prisma.user.create({
+                            data: {
+                                email: user.email,
+                                name: user.name || profile?.name || 'Guest',
+                            },
+                        });
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Error in Google signIn callback:', error);
+                    return false;
+                }
+            }
+            return true;
+        },
+        async session({ session, token }): Promise<Session> {
             if (session?.user && token.email) {
                 session.user.email = token.email as string;
                 session.user.name = token.name as string;
             }
             return session;
         },
-        async redirect({ url, baseUrl }) {
+        async redirect({ url, baseUrl }): Promise<string> {
             return url.startsWith(baseUrl) ? url : `${baseUrl}/dashboard`;
         },
     },
