@@ -10,7 +10,7 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
   const router = useRouter()
 
   return (
-    <div className={`flex justify-between py-8 px-10 ${extraClasses} `}>
+    <div className={`flex justify-between items-center py-8 px-10 ${extraClasses} `}>
       <div>
         <Cloud className="size-8 hover:text-muted-foreground" />
       </div>
