@@ -1,29 +1,31 @@
-import { deleteFileFromS3, uploadFileToS3 } from "@/app/core/fileOperations"
+import { deleteFileFromS3, uploadFileToS3 } from "@/app/core/fileOperations";
 import prisma from "@/prisma/prismaClient";
-import { NextResponse, NextRequest } from "next/server"
+import { NextResponse, NextRequest } from "next/server";
 
+// Helper to extract API key from headers
+function getApiKeyFromHeaders(headers: Headers): string | null {
+  const authorization = headers.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    return authorization.split(" ")[1];
+  }
+  return null;
+}
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    // Check API key authentication
-    const formData = await req.formData();
-    const apikey = formData.get("apiKey") as string;
-
-    if (!apikey) {
+    // Extract API key from headers
+    const apiKey = getApiKeyFromHeaders(req.headers);
+    if (!apiKey) {
       return NextResponse.json(
-        { success: false, message: "no data found" },
+        { success: false, message: "API key is required" },
         { status: 401 }
       );
     }
 
     // Validate the API key
     const user = await prisma.apiKeys.findFirst({
-      where: {
-        key: apikey,
-      },
-      include: {
-        user: true,
-      },
+      where: { key: apiKey },
+      include: { user: true },
     });
 
     if (!user) {
@@ -42,13 +44,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Parse form data
+    const formData = await req.formData();
+
     // Upload file to S3
-    const res = await uploadFileToS3(formData, user.userEmail);
+    const res = await uploadFileToS3(formData, user.user.email);
     return NextResponse.json(
-      {
-        message: res.message,
-        success: res.success,
-      },
+      { message: res.message, success: res.success },
       { status: 200 }
     );
   } catch (error) {
@@ -60,11 +62,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
-    const { fileId, apiKey } = await req.json();
-
+    const apiKey = getApiKeyFromHeaders(req.headers);
     if (!apiKey) {
       return NextResponse.json(
         { success: false, message: "API key is required" },
@@ -84,7 +84,15 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Move file to bin
+    const { fileId }: { fileId: string } = await req.json();
+    if (!fileId) {
+      return NextResponse.json(
+        { success: false, message: "File ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Move file to bin in database
     try {
       const updatedUpload = await prisma.uploads.update({
         where: { id: fileId },
@@ -102,15 +110,13 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    //move to bin
-    const res = await  deleteFileFromS3(fileId)
-
-      return NextResponse.json(
-        { success: res.success, message: res.message },
-        { status: 500 }
-      );
-    }
-   catch (error) {
+    // Delete file from S3
+    const res = await deleteFileFromS3(fileId);
+    return NextResponse.json(
+      { success: res.success, message: res.message },
+      { status: res.success ? 200 : 500 }
+    );
+  } catch (error) {
     console.error("Error in DELETE handler:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
@@ -119,12 +125,10 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
-    // Get query parameters from URLSearchParams
-  const url = req.nextUrl;  // Access the full URL
-  const apiKey = url.searchParams.get('apiKey');
-
+    // Extract API key from headers
+    const apiKey = getApiKeyFromHeaders(req.headers);
     if (!apiKey) {
       return NextResponse.json(
         { success: false, message: "API key is required" },
@@ -132,17 +136,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const data = await prisma.apiKeys.findFirst({
+    const user = await prisma.apiKeys.findFirst({
       where: { key: apiKey },
-      include: { user: {
-        include: {
-          uploads: true
-        }
-      } },
+      include: {
+        user: {
+          include: {
+            uploads: true,
+          },
+        },
+      },
     });
-    console.log(data)
 
-    if (!data) {
+    if (!user) {
       return NextResponse.json(
         { success: false, message: "Invalid API key" },
         { status: 403 }
@@ -150,11 +155,14 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true, message: "uploads fetched successfully", files: data?.user.uploads },
+      {
+        success: true,
+        message: "Uploads fetched successfully",
+        files: user.user.uploads,
+      },
       { status: 200 }
     );
-    }
-   catch (error) {
+  } catch (error) {
     console.error("Error in GET handler:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
