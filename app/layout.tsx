@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 
 export const metadata: Metadata = {
-  title: "Next-Cloud",
+  title: "Nafri",
   description: "upload to secure",
 };
 

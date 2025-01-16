@@ -14,7 +14,7 @@ export default function About() {
           <section className="mb-16">
             <h2 className="text-3xl font-semibold text-white mb-4">Who We Are</h2>
             <p className="text-lg leading-relaxed">
-              At Next-Cloud, we believe that everyone deserves secure, scalable, and accessible cloud storage solutions. 
+              At Nafri, we believe that everyone deserves secure, scalable, and accessible cloud storage solutions. 
               We’re a team of technology enthusiasts and problem solvers dedicated to simplifying how you store and share your data. 
               Our mission is to empower individuals and businesses to focus on what matters most while we handle their data storage needs.
             </p>
@@ -57,7 +57,7 @@ export default function About() {
           <div className="text-center mt-16">
             <h3 className="text-2xl font-bold text-white mb-4">Join Us on This Journey</h3>
             <p className="text-lg">
-              Whether you’re an individual, a business, or a tech enthusiast, Next-Cloud is here to meet your storage needs. 
+              Whether you’re an individual, a business, or a tech enthusiast, Nafri is here to meet your storage needs. 
               <a href="#contact" className="text-blue-500 hover:underline"> Contact us</a> to learn more or get started today.
             </p>
           </div>

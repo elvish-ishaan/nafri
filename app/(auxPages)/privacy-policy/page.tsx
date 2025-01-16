@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
 
       <h3 className="text-xl font-semibold mb-2">1. Introduction</h3>
       <p>
-        At [Your Web App Name], we value your privacy and are committed to protecting your personal information. This Privacy Policy outlines how we collect, use, and safeguard your data when you use our web app.
+        At Nafri, we value your privacy and are committed to protecting your personal information. This Privacy Policy outlines how we collect, use, and safeguard your data when you use our web app.
       </p>
 
       <h3 className="text-xl font-semibold mb-2">2. Information We Collect</h3>

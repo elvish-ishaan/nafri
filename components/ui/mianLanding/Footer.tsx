@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start mb-12">
           {/* Logo and Description */}
           <div className="mb-8 lg:mb-0">
-            <h2 className="text-3xl font-bold text-white">Next-Cloud</h2>
+            <h2 className="text-3xl font-bold text-white">Nafri</h2>
             <p className="text-base mt-3">
               Secure, scalable, and accessible cloud storage for everyone.
             </p>
@@ -67,7 +67,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-base text-gray-400">
-            &copy; {new Date().getFullYear()} Next-Cloud. All rights reserved.
+            &copy; {new Date().getFullYear()} Nafri. All rights reserved.
           </p>
         </div>
       </div>
