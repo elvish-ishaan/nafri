@@ -14,7 +14,7 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
       <div>
         <Cloud className="size-8 hover:text-muted-foreground" />
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-6">
         {landNavLinks.map((link) => (
           <Link
             className="hover:text-muted-foreground"

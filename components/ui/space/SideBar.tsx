@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Home, Star, Trash2, Settings, LogOut, Cloud } from 'lucide-react';
+import { Home, Star, Trash2, Settings, LogOut, Cloud, BookOpenText } from 'lucide-react';
 import UploadBtn from './Upload';
 import StorageCells from './StorageCells';
 import { Separator } from '../separator';
@@ -16,6 +16,7 @@ const links = [
   { title: 'Starred', path: '/starred', icon: Star },
   // { title: 'Share with me', path: '/shared', icon: Share2 },
   { title: 'Bin', path: '/bin', icon: Trash2 },
+  { title: 'Docs', path: '/docs', icon: BookOpenText}
 ];
 
 
