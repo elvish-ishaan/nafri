@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node prisma/seed.mjs",
-    "resetdb": "ts-node prisma/resetdb.mjs"
+    "resetdb": "ts-node prisma/resetdb.mjs",
+    "test": "vitest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.685.0",
@@ -59,6 +60,7 @@
     "prisma": "^5.21.1",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.0.2"
   }
 }

@@ -1,16 +1,16 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { DialogDescription, DialogTitle } from '../dialog'
 import { Button } from '../button'
 import {  Download, Plus, Redo2, Share2, Star, } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { addFileToSpace, addToStarred, restoreFile } from '@/app/actions/uploads'
+import { addFileToSpace, addToStarred, fetchSignedUrl, restoreFile } from '@/app/actions/uploads'
 import { useSession } from 'next-auth/react'
 
 //refactor the whole props send filedetails as whole object and then
 //extract other info from it
 
-const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
+const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
   {fileKey: string, uploadDate: string, fileId: string, starred: boolean, fileOwner: string, fileUrl: string}) => {
     const [addedToStarred, setAddedToStarred] = useState<boolean>(starred)
     const { toast } = useToast()
@@ -19,11 +19,21 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
     const [addedFileStatus, setFileAddedStatus] = useState<boolean>(false)
     const [currentPath, setCurrentPath] = useState('');
     const [isRestored, setIsRestored] = useState<boolean>(false)
+    const [downloadUrl, setDownloadUrl] = useState<string>('')
+
+
+    const fetchDownLink = useCallback(async () => { 
+      const res = await fetchSignedUrl(fileKey, true)
+      setDownloadUrl(res?.signedUrl || '')
+    }, [fileKey]); // Add fileKey as dependency
 
     useEffect(() => {
         // Get the full URL path on the client side
         setCurrentPath(window.location.pathname);
-    }, []);
+        //getting downloadable url
+        fetchDownLink()
+    },[fetchDownLink]);
+
     //handling add to starred
     const handleStarClk = async () => {
       try {
@@ -117,7 +127,7 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner,fileUrl}:
 
             <Button onClick={() => handleShare(fileId)}><Share2/>{ copyStatus ?  <p>copied</p> : <p>Share</p>}</Button>
             
-            <a href={fileUrl}><Button><Download/>Download</Button></a>
+           <a href={downloadUrl}><Button><Download/>Download</Button></a>
             {
               addedToStarred ? <Button><Star fill='yellow'/></Button> 
               : <Button onClick={handleStarClk}><Star/></Button>

@@ -43,6 +43,7 @@ const UploadBtn: React.FC = () => {
     try {
       setUploadLoading(true);
       const upload = await uploadFileAws(formData);
+      
       setUploadLoading(false);
 
       if (upload?.success) {
@@ -81,6 +82,7 @@ const UploadBtn: React.FC = () => {
           onAction={uploadLoading ? () => {} : handleUpload}
         >
           <div>
+            { fileUpload && <span>{fileUpload.name}</span> }
             <Input ref={fileInputRef} type="file" onChange={handleFileChange} />
           </div>
         </Modal>
