@@ -15,10 +15,10 @@ interface ModalProps {
   open: boolean;
   onClose: () => void; // Separate function for handling modal close
   onAction?: () => void; // Optional action for button click
-  title: string;
-  description: string;
-  children: React.ReactNode;
-  footerBtn: string;
+  title?: string;
+  description?: string;
+  children?: React.ReactNode;
+  footerBtn?: string;
 }
 
 export function Modal({

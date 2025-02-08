@@ -37,8 +37,13 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
     //handling add to starred
     const handleStarClk = async () => {
       try {
-        await addToStarred(fileId)
-        setAddedToStarred(true)
+        const res = await addToStarred(fileId)
+        if(res.success){
+          setAddedToStarred(!addedToStarred)
+          toast({
+            title: !addedToStarred ? 'starred' : 'unstarred'
+          })
+        }
       } catch (error) {
         console.log(error,'error in updating starred file')
         toast({
@@ -129,7 +134,7 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
             
            <a href={downloadUrl}><Button><Download/>Download</Button></a>
             {
-              addedToStarred ? <Button><Star fill='yellow'/></Button> 
+              addedToStarred ? <Button onClick={handleStarClk}><Star fill='yellow'/></Button> 
               : <Button onClick={handleStarClk}><Star/></Button>
             }
           </div>

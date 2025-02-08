@@ -39,6 +39,7 @@
     "next-auth": "^4.24.10",
     "next-themes": "^0.3.0",
     "pdfjs-dist": "^4.8.69",
+    "razorpay": "^2.9.5",
     "react": "^18",
     "react-dom": "^18",
     "react-pdf": "^9.1.1",

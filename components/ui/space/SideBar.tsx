@@ -9,6 +9,8 @@ import { Button } from '../button';
 import { signOut } from 'next-auth/react';
 import { fetchUserData } from '@/app/actions/user';
 import { useToast } from '@/hooks/use-toast';
+import PricingCards from './PricingCards';
+import { PricingModal } from './PricingModal';
 
 const links = [
   { title: 'My Space', path: '/dashboard', icon: Home },
@@ -27,6 +29,7 @@ interface  UserStorage {
 export default function SideBar() {
   const [userStorage, setUserStorage] = useState<UserStorage>({value: 0, outOf: 0})
   const {toast} = useToast()
+  const [isUpgModelOpen, setIsUpgModelOpen] = useState<boolean>(false)
 
   useEffect(() => {
    try {
@@ -47,8 +50,25 @@ export default function SideBar() {
     })
    }
   },[toast])
+
+  //hanlding upgrade
+  const handleUpgrade = () => {
+     //set modal to true
+     setIsUpgModelOpen(true)
+     //show pricing cards
+     //show payment gateway open
+     // close the modal
+  }
+
   return (
     <div className="flex h-screen flex-col text-foreground w-64 border-foreground-muted border-r-2">
+      {/* upgrade modal */}
+      <div className=' w-full'>
+      { isUpgModelOpen && <PricingModal open={isUpgModelOpen} onClose={() => setIsUpgModelOpen(false)}>
+        <PricingCards/>
+      </PricingModal> }
+      </div>
+
       {/* Sidebar Header */}
       <div className="px-4 py-4 border-b border-muted-foreground">
         <h2 className=" text-2xl font-semibold">Next Cloud</h2>
@@ -79,7 +99,7 @@ export default function SideBar() {
             <div className=' px-1 mt-3 flex flex-col justify-between'>
                <StorageCells value={ userStorage.value }
                 outOf={userStorage.outOf }/>
-               <Button variant={'outline'}>Upgrade</Button>
+               <Button onClick={handleUpgrade} variant={'outline'}>Upgrade</Button>
             </div>
         </div>
       </div>

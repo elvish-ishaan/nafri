@@ -1,8 +1,5 @@
 make universal file viewer 
-write sdk in js and other programming launguages and implemnet its handling backend
-fix the proper control over starred( unstar and viceversa)
 cron job for deleting file regularly
-make other function for generating downlaod liks for media 
 
 #MAJOR IMPROVEMENTS:
 -> make responsible ui

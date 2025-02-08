@@ -252,18 +252,24 @@ export const addToStarred = async (fileId: string) => {
   }
   }
   try {
-    await prisma.uploads.update({
+    //find first then update 
+    const uploadFile = await prisma.uploads.findFirst({
+      where: {
+        id: fileId
+      }
+    })
+     await prisma.uploads.update({
       where: {
         id: fileId
       },
       data:{
-        starred: true
+        starred: !uploadFile?.starred
       }
     })
     //return res
     return({
       success: true,
-      message: 'added to starred successfully'
+      message: 'updated starred successfully'
     })
   } catch (error) {
     console.log(error,'error in updating starred file')
