@@ -76,7 +76,11 @@ export default function PricingCards() {
         notes: {
           plan: storagePlan
         },
-        handler: async (response: any) => {
+        handler: async (response: {
+          razorpay_payment_id: string,
+          razorpay_order_id:string,
+          razorpay_signature: string,
+        }) => {
           const data = {
             orderCreationId: orderId,
             razorpayPaymentId: response.razorpay_payment_id,
