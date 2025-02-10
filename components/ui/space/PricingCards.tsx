@@ -16,7 +16,8 @@ import { useSession } from "next-auth/react";
 // Declare Razorpay globally
 declare global {
   interface Window {
-    Razorpay: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+   Razorpay: any;
   }
 }
 
@@ -111,6 +112,7 @@ export default function PricingCards() {
       };
 
       const paymentObject = new window.Razorpay(options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       paymentObject.on("payment.failed", (response: any) => {
        toast({
         title: response.error.description,
