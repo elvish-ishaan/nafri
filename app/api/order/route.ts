@@ -1,6 +1,7 @@
-import Razorpay from 'razorpay';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { razorpay } from '@/lib/paymentConfig';
+import { v4 as uuid } from 'uuid'
 
 interface PayOptions {
     amount: string;
@@ -12,10 +13,6 @@ interface PayOptions {
     };
 }
 
-export const razorpay = new Razorpay({
- key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID! as string,
- key_secret: process.env.RAZORPAY_KEY_SECRET as string,
-});
 
 export async function POST(request: NextRequest) {
  const { amount, currency, plan } = (await request.json()) as {
@@ -29,13 +26,14 @@ export async function POST(request: NextRequest) {
  const options: PayOptions = {
   amount: amount,
   currency: currency,
-  receipt: 'rcp-test',
+  receipt: `rcpt-${uuid()}`,
   notes: {
     plan: plan,
     userEmail: session?.user?.email
   }
  };
- const order = await razorpay.orders.create(options);
- console.log(order);
+ //@ts-expect-error fix this
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ const order:any = await razorpay.orders.create(options);
  return NextResponse.json({ orderId: order?.id }, { status: 200 });
 }

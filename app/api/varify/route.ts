@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { razorpay } from '../order/route';
 import prisma from '@/prisma/prismaClient';
 import { getServerSession } from 'next-auth';
+import { razorpay } from '@/lib/paymentConfig';
 
 //util function GB -> Bytes
 function gbToBytes(gb: number): number {
@@ -39,7 +39,6 @@ const generatedSignature = (
 export async function POST(request: NextRequest) {
  const { orderCreationId, razorpayPaymentId, razorpaySignature } =
   await request.json();
-  console.log(orderCreationId, razorpayPaymentId, razorpaySignature, 'these are creds.........')
 
  const signature = generatedSignature(orderCreationId, razorpayPaymentId);
  if (signature !== razorpaySignature) {
