@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
  const options: PayOptions = {
   amount: amount,
   currency: currency,
-  receipt: `rcpt-${uuid()}`,
+  receipt: `rcp-${uuid().split('-')[0]}`,
   notes: {
     plan: plan,
     userEmail: session?.user?.email
