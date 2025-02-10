@@ -6,8 +6,16 @@ import { Toaster } from "@/components/ui/toaster";
 
 
 export const metadata: Metadata = {
-  title: "Nafri",
-  description: "upload to secure",
+  title: "Nafri - Next Gen Cloud Storage",
+  description: "An all-in-one secure cloud storage solution",
+  openGraph: {
+    title: "Nafri - Next Gen Cloud Storage",
+    description: "An all-in-one secure cloud storage solution",
+    type: "website",
+    url: process.env.NEXT_PUBLIC_BASE_URL,
+    locale: "en_US",
+    siteName: "Nafri"
+  }
 };
 
 export default function RootLayout({
