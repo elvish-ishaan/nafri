@@ -53,14 +53,14 @@ export async function POST(request: NextRequest) {
 
  //add db call to update the user storage
  try {
-       await prisma.user.update({
+      await prisma.user.update({
         where: {
             email: session?.user?.email || '',
         },
         data: {
             totalSpace: {
                 //@ts-expect-error why showing error here fix
-                increment: gbToBytes(Number(order.notes?.plan?.split(' ')[0]))
+                increment: BigInt(gbToBytes(Number(order.notes?.plan?.split(' ')[0])))
             }
         }
      })

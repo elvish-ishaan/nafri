@@ -55,9 +55,6 @@ export default function SideBar() {
   const handleUpgrade = () => {
      //set modal to true
      setIsUpgModelOpen(true)
-     //show pricing cards
-     //show payment gateway open
-     // close the modal
   }
 
   return (
@@ -65,13 +62,13 @@ export default function SideBar() {
       {/* upgrade modal */}
       <div className=' w-full'>
       { isUpgModelOpen && <PricingModal open={isUpgModelOpen} onClose={() => setIsUpgModelOpen(false)}>
-        <PricingCards/>
+        <PricingCards userStorage={userStorage} setUserStorage={setUserStorage}/>
       </PricingModal> }
       </div>
 
       {/* Sidebar Header */}
       <div className="px-4 py-4 border-b border-muted-foreground">
-        <h2 className=" text-2xl font-semibold">Next Cloud</h2>
+        <h2 className=" text-2xl font-semibold tracking-wider">NAFRI</h2>
       </div>
 
       {/* Sidebar Content */}

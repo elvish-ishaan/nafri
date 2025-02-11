@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import {
   Card,
   CardContent,
@@ -25,19 +25,26 @@ const pricingPlans = [
   { storage: "10 GB", price: "₹100", description: "For light document & photo storage." },
   { storage: "50 GB", price: "₹400", description: "Mix of documents, photos & videos." },
   { storage: "100 GB", price: "₹700", description: "Large files, high-res photos & videos." },
-  { storage: "1 TB", price: "₹5000", description: "For businesses & large projects." },
+  { storage: "1024 GB", price: "₹5000", description: "For businesses & large projects." },
 ];
 
-export default function PricingCards() {
+interface userStorage {
+  value: number;
+  outOf: number;
+}
+
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function PricingCards ({userStorage, setUserStorage}:{
+  userStorage: userStorage
+  setUserStorage: Dispatch<SetStateAction<userStorage>>
+}) {
   const { data: session } = useSession()
   const name:string | undefined | null = session?.user?.name ?? 'guest'
   const email:string | undefined | null = session?.user?.email
-  let amount = 0;
   const [currency] = useState("INR");
-  const [storagePlan, setStoragePlan] = useState('')
   const { toast } = useToast()
 
-  const createOrderId = async () => {
+  const createOrderId = async (strPlan: string, PlnAmount: number) => {
     try {
       const response = await fetch("/api/order", {
         method: "POST",
@@ -45,8 +52,8 @@ export default function PricingCards() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: amount * 100,
-          plan: storagePlan
+          amount: PlnAmount * 100,
+          plan: strPlan
         }),
       });
 
@@ -62,9 +69,9 @@ export default function PricingCards() {
     }
   };
 
-  const processPayment = async () => {
+  const processPayment = async (strPlan: string, amount: number) => {
     try {
-      const orderId = await createOrderId();
+      const orderId = await createOrderId(strPlan, amount);
       if (!orderId || !window.Razorpay) return;
 
       const options = {
@@ -75,7 +82,7 @@ export default function PricingCards() {
         description: "Payment for storage plan",
         order_id: orderId,
         notes: {
-          plan: storagePlan
+          plan: strPlan
         },
         handler: async (response: {
           razorpay_payment_id: string,
@@ -97,6 +104,8 @@ export default function PricingCards() {
           const res = await result.json();
            //show user taost for sucessful payment
            if(res.isOk){
+            //update the user storage on client side also
+            setUserStorage(userStorage => ({ ...userStorage, outOf: userStorage.outOf + Number(strPlan.split(' ')[0]) }));
             toast({
               title: 'Your Storage Has Been Upgraded'
              })
@@ -150,9 +159,8 @@ export default function PricingCards() {
               <Button
                 className="w-full bg-black hover:bg-gray-800 text-white text-sm py-2 rounded-xl transition-colors"
                 onClick={() => {
-                  amount = Number(plan.price.replace("₹", ""))
-                  setStoragePlan(plan.storage)
-                  processPayment();
+                  const amount = Number(plan.price.replace("₹", ""))
+                  processPayment(plan.storage, amount);
                 }}
               >
                 Buy Now
