@@ -32,7 +32,7 @@ export default function PricingCards() {
   const { data: session } = useSession()
   const name:string | undefined | null = session?.user?.name ?? 'guest'
   const email:string | undefined | null = session?.user?.email
-  const [amount, setAmount] = useState("0");
+  let amount = 0;
   const [currency] = useState("INR");
   const [storagePlan, setStoragePlan] = useState('')
   const { toast } = useToast()
@@ -45,7 +45,7 @@ export default function PricingCards() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: parseFloat(amount) * 100,
+          amount: amount * 100,
           plan: storagePlan
         }),
       });
@@ -69,7 +69,7 @@ export default function PricingCards() {
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: parseFloat(amount) * 100,
+        amount: amount * 100,
         currency,
         name,
         description: "Payment for storage plan",
@@ -150,7 +150,7 @@ export default function PricingCards() {
               <Button
                 className="w-full bg-black hover:bg-gray-800 text-white text-sm py-2 rounded-xl transition-colors"
                 onClick={() => {
-                  setAmount(plan.price.replace("₹", ""));
+                  amount = Number(plan.price.replace("₹", ""))
                   setStoragePlan(plan.storage)
                   processPayment();
                 }}
