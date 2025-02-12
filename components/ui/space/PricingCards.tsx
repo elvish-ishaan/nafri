@@ -117,7 +117,7 @@ export default function PricingCards ({userStorage, setUserStorage}:{
            }
         },
         prefill: { name, email },
-        theme: { color: "#3399cc" },
+        theme: { color: "#000000" },
       };
 
       const paymentObject = new window.Razorpay(options);
