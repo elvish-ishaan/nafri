@@ -5,110 +5,120 @@ import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { contentType } from "@/lib/contentTypes";
+import fs from 'fs';
+import path from 'path';
 
+const TEMP_STORAGE = '/tmp/uploads'; // Directory for storing chunks temporarily
 
 export const uploadFileAws = async (formData: FormData) => {
     //check auth
     const session = await getServerSession()
 
-    if(!session){
-      return {
-        success: false,
-        message: 'user unauthenticated'
-    }
-    }
-    //do upload operations
-    const file = formData.get("file") as File;
-    if (!file) return;
-    const fileName = file.name
-
-    //check storage operation like is user able to upload according to his assingned storage
-      const user = await prisma.user.findUnique({
-        where: {
-          email: session.user?.email || "",
-        }
-      });
-
-      //compare storage
-      const expectedStorage = Number(user?.currentSpace) + file.size;
-      if( expectedStorage > Number( user?.totalSpace) ) {
+    if (!session) {
         return {
-          success: false,
-          message: 'Not enough storage'
-      }
-      }
+            success: false,
+            message: 'user unauthenticated'
+        }
+    }
+
+    //getting chunk data 
+    const chunk = formData.get('chunk') as Blob;
+    const chunkNumber = Number(formData.get('chunkNumber'));
+    const totalChunks = Number(formData.get('totalChunks'));
+    const fileName = formData.get('fileName') as string;
+    const fileSize = Number(formData.get('fileSize'));
+
+    //return error if not found
+    if (!chunk || !fileName) return { success: false, message: 'Invalid file data' };
+
+    //check storage operation like is user able to upload according to his assigned storage
+    const user = await prisma.user.findUnique({
+        where: { email: session.user?.email || '' },
+    });
+
+    //check for storage
+    const expectedStorage = Number(user?.currentSpace) + fileSize;
+    if (expectedStorage > Number(user?.totalSpace)) {
+        return { success: false, message: 'Not enough storage' };
+    }
+    
     try {
-      let fileExtension:(string | undefined)
-      try {
-        //get the extension of the uploaded file
-         fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
-        //conver file to buffer before uploading
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        const uploadToS3 = new PutObjectCommand({
-            Bucket,
-            Key: fileName,
-            Body: fileBuffer,
-            ContentType: contentType[fileExtension] || 'application/octet-stream' // Default to binary data
-          });
-          await s3.send(uploadToS3);
-      } catch (error) {
-        console.log(error,'error in uploading to aws')
-        return {
-          success: false,
-          message: 'unable to upload file'
-      }
-      }
-      //save metadata to database
-      try {
-        await prisma.$transaction([
-          // Create file upload entry
-          prisma.uploads.create({
-            data: {
-              fileKey: fileName,
-              uploadDate: new Date().toISOString(),
-              fileType: fileExtension,
-              userEmail: session.user?.email || '',
-            },
-          }),
-        
-          // Update user storage
-          prisma.user.update({
-            where: {
-              email: session.user?.email || "",
-            },
-            data: {
-              //increase (add to existing) storage
-              currentSpace: {
-                increment: file.size, 
-              },
-              //update recents
-              recents: {
-                create: {
-                  uploadType: fileExtension,
-                }
-              }
-            },
-          }),
-        ]);
-        return {
-            success: true,
-            message: "uploaded successfully"
+      let fileExtension: (string | undefined);
+        try {
+            //getting file buffer
+            const fileBuffer = Buffer.from(await chunk.arrayBuffer());
+
+            //get the extension of the uploaded file
+            fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
+
+            // Ensure temp storage directory exists
+            if (!fs.existsSync(TEMP_STORAGE)) {
+                fs.mkdirSync(TEMP_STORAGE, { recursive: true });
+            }
+
+            const chunkPath = path.join(TEMP_STORAGE, `${fileName}.part${chunkNumber}`);
+            fs.writeFileSync(chunkPath, fileBuffer);
+        } catch (error) {
+            console.log(error, 'error in storing chunk locally')
+            return {
+                success: false,
+                message: 'unable to store file chunk'
+            }
         }
-      } catch (error) {
-        console.log(error,'error in saving metadata to db')
-        return {
-          success: false,
-          message: 'some problem occur'
-      }
-      }
+
+        //save metadata to database
+        if (chunkNumber + 1 === totalChunks) {
+            await mergeChunks(fileName, totalChunks, fileExtension);
+            await prisma.$transaction([
+                prisma.uploads.create({
+                    data: {
+                        fileKey: fileName,
+                        uploadDate: new Date().toISOString(),
+                        fileType: fileExtension,
+                        userEmail: session.user?.email || '',
+                    },
+                }),
+                prisma.user.update({
+                    where: { email: session.user?.email || '' },
+                    data: {
+                        currentSpace: { increment: fileSize },
+                        recents: { create: { uploadType: fileExtension } },
+                    },
+                }),
+            ]);
+        }
+
+        return { success: true, message: 'Uploaded successfully' };
+        
     } catch (error) {
-      console.error(error);
-      return {
-        success: false,
-        message: 'internal server error'
-    }
+        console.error(error);
+        return {
+            success: false,
+            message: 'internal server error'
+        }
     }
 }
+
+async function mergeChunks(fileKey: string, totalChunks: number, fileExt: string) {
+    const chunkBuffers: Buffer[] = [];
+    for (let i = 0; i < totalChunks; i++) {
+        const chunkPath = path.join(TEMP_STORAGE, `${fileKey}.part${i}`);
+        const partBuffer = fs.readFileSync(chunkPath);
+        chunkBuffers.push(partBuffer);
+    }
+
+    const mergedBuffer = Buffer.concat(chunkBuffers);
+    
+    await s3.send(new PutObjectCommand({ Bucket, Key: fileKey, Body: mergedBuffer, 
+      ContentType: contentType[fileExt] || 'application/octet-stream' // Default to binary data
+     }));
+    
+    // Cleanup temp chunks
+    for (let i = 0; i < totalChunks; i++) {
+        fs.unlinkSync(path.join(TEMP_STORAGE, `${fileKey}.part${i}`));
+    }
+}
+
 
 //delete file from storage
 export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
