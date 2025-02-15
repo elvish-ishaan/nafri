@@ -11,7 +11,7 @@ import { Input } from '../input';
 import ProgressBar from './ProgressBar';
 
 const CHUNK_SIZE = 1024 * 1024; // 1 MB
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 100 MB
 
 interface UploadProgress {
   fileName: string;

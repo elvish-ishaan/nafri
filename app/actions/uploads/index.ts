@@ -74,17 +74,17 @@ export const uploadFileAws = async (formData: FormData) => {
                     }),
                 ]);
                 } catch (error) {
-                  console.log(error,'error in doing trrnasat.....db........')
+                  console.log(error,'error in doing trasaction.....db........')
                 }
 
-                return { success: true, message: 'Uploaded successfully' };
+                return { success: true, isCompleted: true, message: 'Uploaded successfully' };
             } catch (error) {
                 console.error('Error in merging/uploading:', error);
                 return { success: false, message: 'Upload failed' };
             }
         }
 
-        return { success: true, message: `Chunk ${chunkNumber + 1}/${totalChunks} received` };
+        return { success: true, isCompleted: false , message: `Chunk ${chunkNumber + 1}/${totalChunks} received` };
 
     } catch (error) {
         console.error(error);
@@ -148,6 +148,7 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
         deleteDate: new Date(), // Optionally set the `deleteDate`
       },
     });
+    console.log('file deleted...........')
   } catch (error) {
     console.log(error,'error in moving files to bin')
     return {
@@ -218,43 +219,51 @@ export const fetchAllUploads = async () => {
 }
 
 //get signed urls
-export const fetchSignedUrl = async (fileKey: string, downloadable?: boolean) => {
-  //authentication check
-  const session = await getServerSession()
-  if(!session){
-    return {
-      success: false,
-      message: 'user unauthenticated'
+const S3_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
+const CLOUDFRONT_DOMAIN = process.env.AWS_CLOUDFRONT_DOMAIN; 
+
+export const fetchSignedUrl = async (fileKey: string, downloadable: boolean = false) => {
+  const session = await getServerSession();
+  if (!session) {
+    return { success: false, message: 'User unauthenticated' };
   }
+
+  if (!fileKey) {
+    return { success: false, message: 'File key missing' };
   }
-  if(!fileKey){
-    return {
-      success: false,
-      message: 'file key missing'
-  }
-  }
+
   try {
-      // Create a command for getting the object
-      const command = new GetObjectCommand({
-        Bucket,
-        Key: fileKey || '',
-        ResponseContentDisposition: downloadable ? 'attachment' : 'inline'
-      });
- 
-      // Get the pre-signed URL
-      const signedUrl = await getSignedUrl(s3, command);
+    if (!downloadable) {
+      if (!CLOUDFRONT_DOMAIN) {
+        throw new Error('CloudFront domain not set in environment variables');
+      }
+
+      // Construct the CloudFront URL
+      const cloudfrontUrl = `${CLOUDFRONT_DOMAIN}/${encodeURIComponent(fileKey)}`;
+
       return {
-        success: false,
-        signedUrl
-      }; // Return null if signedUrl is undefined    
+        success: true,
+        signedUrl: cloudfrontUrl,
+      };
+    }
+
+    // Generate signed S3 URL for downloading
+    const command = new GetObjectCommand({
+      Bucket: S3_BUCKET_NAME,
+      Key: fileKey,
+      ResponseContentDisposition: 'attachment', // Force download
+    });
+
+    const signedUrl = await getSignedUrl(s3, command);
+
+    return { success: true, signedUrl };
   } catch (error) {
-    console.log(error, 'can\'t get signed urls');
-    return {
-      success: false,
-      message: 'cant fetch file url'
+    console.error("Can't get signed URL:", error);
+    return { success: false, message: 'Error fetching file URL' };
   }
-  }
-}
+};
+
+
 
 
 //add to starred 

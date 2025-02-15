@@ -22,8 +22,7 @@ const Page =  () => {
             try {
                 const res = await getBinFiles()
                 if (res?.success) {
-                    const validBinFiles = res?.binFiles?.filter((file) => file !== null) as BinFile[]
-                    setBinFiles(validBinFiles || [])
+                    setBinFiles(res?.binFiles as BinFile[])
                 }
             } catch (error) {
                 console.log(error, 'Error in getting bin files')
@@ -35,7 +34,7 @@ const Page =  () => {
         }
 
         fetchBinFiles()
-    }, [ toast]) 
+    },[ toast ]) 
 
   return (
     <section>
