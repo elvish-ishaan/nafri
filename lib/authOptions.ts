@@ -61,8 +61,7 @@ export const authOptions: NextAuthOptions = {
         secret: process.env.NEXTAUTH_SECRET,
     },
     callbacks: {
-        async signIn({ user, account, profile }): Promise<boolean> {
-            console.log(account)
+        async signIn({ user, profile }): Promise<boolean> {
             if (user?.email) {
                 try {
                     const existingUser = await prisma.user.findUnique({ where: { email: user.email } });

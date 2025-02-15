@@ -8,116 +8,122 @@ import { contentType } from "@/lib/contentTypes";
 import fs from 'fs';
 import path from 'path';
 
-const TEMP_STORAGE = '/tmp/uploads'; // Directory for storing chunks temporarily
+
+const TEMP_STORAGE = '/tmp/uploads'; // Temporary storage for chunks
 
 export const uploadFileAws = async (formData: FormData) => {
-    //check auth
-    const session = await getServerSession()
+    const session = await getServerSession();
+    if (!session) return { success: false, message: 'User unauthenticated' };
 
-    if (!session) {
-        return {
-            success: false,
-            message: 'user unauthenticated'
-        }
-    }
-
-    //getting chunk data 
+    // Extracting form data
     const chunk = formData.get('chunk') as Blob;
     const chunkNumber = Number(formData.get('chunkNumber'));
     const totalChunks = Number(formData.get('totalChunks'));
     const fileName = formData.get('fileName') as string;
     const fileSize = Number(formData.get('fileSize'));
 
-    //return error if not found
     if (!chunk || !fileName) return { success: false, message: 'Invalid file data' };
 
-    //check storage operation like is user able to upload according to his assigned storage
+    // Check user storage quota
     const user = await prisma.user.findUnique({
         where: { email: session.user?.email || '' },
     });
 
-    //check for storage
-    const expectedStorage = Number(user?.currentSpace) + fileSize;
-    if (expectedStorage > Number(user?.totalSpace)) {
+    if (!user) return { success: false, message: 'User not found' };
+
+    const expectedStorage = Number(user.currentSpace) + fileSize;
+    if (expectedStorage > Number(user.totalSpace)) {
         return { success: false, message: 'Not enough storage' };
     }
-    
+
     try {
-      let fileExtension: (string | undefined);
-        try {
-            //getting file buffer
-            const fileBuffer = Buffer.from(await chunk.arrayBuffer());
+        const fileBuffer = Buffer.from(await chunk.arrayBuffer());
+        const fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
 
-            //get the extension of the uploaded file
-            fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
-
-            // Ensure temp storage directory exists
-            if (!fs.existsSync(TEMP_STORAGE)) {
-                fs.mkdirSync(TEMP_STORAGE, { recursive: true });
-            }
-
-            const chunkPath = path.join(TEMP_STORAGE, `${fileName}.part${chunkNumber}`);
-            fs.writeFileSync(chunkPath, fileBuffer);
-        } catch (error) {
-            console.log(error, 'error in storing chunk locally')
-            return {
-                success: false,
-                message: 'unable to store file chunk'
-            }
+        // Ensure temp directory exists
+        if (!fs.existsSync(TEMP_STORAGE)) {
+            fs.mkdirSync(TEMP_STORAGE, { recursive: true });
         }
 
-        //save metadata to database
+        // Save chunk locally
+        const chunkPath = path.join(TEMP_STORAGE, `${fileName}.part${chunkNumber}`);
+        fs.writeFileSync(chunkPath, fileBuffer);
+
+        console.log('operation...........')
+        // If it's the last chunk, merge and upload
         if (chunkNumber + 1 === totalChunks) {
-            await mergeChunks(fileName, totalChunks, fileExtension);
-            await prisma.$transaction([
-                prisma.uploads.create({
-                    data: {
-                        fileKey: fileName,
-                        uploadDate: new Date().toISOString(),
-                        fileType: fileExtension,
-                        userEmail: session.user?.email || '',
-                    },
-                }),
-                prisma.user.update({
-                    where: { email: session.user?.email || '' },
-                    data: {
-                        currentSpace: { increment: fileSize },
-                        recents: { create: { uploadType: fileExtension } },
-                    },
-                }),
-            ]);
+            try {
+                await mergeChunks(fileName, totalChunks, fileExtension);
+
+                // Transaction: Update database only if S3 upload succeeds
+                await prisma.$transaction([
+                    prisma.uploads.create({
+                        data: {
+                            fileKey: fileName,
+                            uploadDate: new Date().toISOString(),
+                            fileType: fileExtension,
+                            userEmail: session.user?.email || '',
+                        },
+                    }),
+                    prisma.user.update({
+                        where: { email: session.user?.email || '' },
+                        data: {
+                            currentSpace: { increment: fileSize },
+                            recents: { create: { uploadType: fileExtension } },
+                        },
+                    }),
+                ]);
+
+                return { success: true, message: 'Uploaded successfully' };
+            } catch (error) {
+                console.error('Error in merging/uploading:', error);
+                return { success: false, message: 'Upload failed' };
+            }
         }
 
-        return { success: true, message: 'Uploaded successfully' };
-        
+        return { success: true, message: `Chunk ${chunkNumber + 1}/${totalChunks} received` };
+
     } catch (error) {
         console.error(error);
-        return {
-            success: false,
-            message: 'internal server error'
-        }
+        return { success: false, message: 'Internal server error' };
     }
-}
+};
 
+// Merge chunks and upload to S3
 async function mergeChunks(fileKey: string, totalChunks: number, fileExt: string) {
-    const chunkBuffers: Buffer[] = [];
-    for (let i = 0; i < totalChunks; i++) {
-        const chunkPath = path.join(TEMP_STORAGE, `${fileKey}.part${i}`);
-        const partBuffer = fs.readFileSync(chunkPath);
-        chunkBuffers.push(partBuffer);
-    }
+    try {
+        const chunkBuffers: Buffer[] = [];
 
-    const mergedBuffer = Buffer.concat(chunkBuffers);
-    
-    await s3.send(new PutObjectCommand({ Bucket, Key: fileKey, Body: mergedBuffer, 
-      ContentType: contentType[fileExt] || 'application/octet-stream' // Default to binary data
-     }));
-    
-    // Cleanup temp chunks
-    for (let i = 0; i < totalChunks; i++) {
-        fs.unlinkSync(path.join(TEMP_STORAGE, `${fileKey}.part${i}`));
+        for (let i = 0; i < totalChunks; i++) {
+            const chunkPath = path.join(TEMP_STORAGE, `${fileKey}.part${i}`);
+            if (!fs.existsSync(chunkPath)) {
+                throw new Error(`Missing chunk: ${chunkPath}`);
+            }
+            chunkBuffers.push(fs.readFileSync(chunkPath));
+        }
+
+        const mergedBuffer = Buffer.concat(chunkBuffers);
+
+        await s3.send(new PutObjectCommand({
+            Bucket: Bucket,
+            Key: fileKey,
+            Body: mergedBuffer,
+            ContentType: contentType[fileExt] || 'application/octet-stream',
+        }));
+
+        console.log('Uploaded successfully to S3.');
+
+        // Cleanup temporary files
+        for (let i = 0; i < totalChunks; i++) {
+            fs.unlinkSync(path.join(TEMP_STORAGE, `${fileKey}.part${i}`));
+        }
+
+    } catch (error) {
+        console.error('Error merging/uploading:', error);
+        throw error; // Ensure failure is propagated
     }
 }
+
 
 
 //delete file from storage

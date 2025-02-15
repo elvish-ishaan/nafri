@@ -3,13 +3,15 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Plus, Play, Pause, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Modal } from './Modal';
 import { uploadFileAws } from '@/app/actions/uploads';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../input';
+import ProgressBar from './ProgressBar';
 
 const CHUNK_SIZE = 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
 interface UploadProgress {
   fileName: string;
@@ -20,41 +22,47 @@ interface UploadProgress {
 
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showTooltip, setShowTooltip] = useState(false);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { toast } = useToast();
   const [uploadProgressList, setUploadProgressList] = useState<UploadProgress[]>([]);
-  const [isContentUploading, setIsContentUploading] = useState<boolean>(false)
-  
+  const [isContentUploading, setIsContentUploading] = useState<boolean>(false);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
+    
+    if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
+      toast({ title: 'File size exceeds 100MB limit', variant: 'destructive' });
+      return;
+    }
+
     setFileUpload(selectedFile);
     setShowUploadModal(true);
+    
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleUpload = async () => {
-   
     if (!fileUpload) {
       toast({ title: 'No file selected', variant: 'destructive' });
       return;
     }
-     //close upload modal
-     setShowUploadModal(false)
-    
-    //show uplaod progress modal
-    setIsContentUploading(true)
+
+    setShowUploadModal(false);
+    setIsContentUploading(true);
 
     const totalChunks = Math.ceil(fileUpload.size / CHUNK_SIZE);
+    let progress = 0;
+
     const uploadProgress: UploadProgress = {
       fileName: fileUpload.name,
-      progress: 0,
+      progress,
       isPaused: false,
       isCompleted: false,
     };
-    setUploadProgressList((prev) => [...prev, uploadProgress]);
     
+    setUploadProgressList((prev) => [...prev, uploadProgress]);
+
     for (let i = 0; i < totalChunks; i++) {
       if (uploadProgress.isPaused) break;
 
@@ -62,38 +70,43 @@ const UploadBtn: React.FC = () => {
       const formData = new FormData();
       formData.append('chunk', chunk);
       formData.append('fileName', fileUpload.name);
-      formData.append('chunkIndex', i.toString());
+      formData.append('chunkNumber', i.toString()); // Fixed key mismatch
       formData.append('totalChunks', totalChunks.toString());
+      formData.append('contentType', fileUpload.type); // Added file type
 
       try {
         const response = await uploadFileAws(formData);
+
         if (!response.success) {
           toast({ title: 'Something went wrong', variant: 'destructive' });
+          break;
         }
+
+        progress = Math.round(((i + 1) / totalChunks) * 100);
+        
         setUploadProgressList((prev) =>
           prev.map((item) =>
-            item.fileName === fileUpload.name
-              ? { ...item, progress: Math.round(((i + 1) / totalChunks) * 100) }
-              : item
+            item.fileName === fileUpload.name ? { ...item, progress } : item
           )
         );
-        //close upload progress modal
-        setIsContentUploading(false)
-        //show success taost
-        // toast({ title: 'File Uploaded', variant: 'default' });
+
       } catch (error) {
         console.error('Upload failed:', error);
         toast({ title: 'Upload failed. Resumable.', variant: 'destructive' });
         break;
       }
     }
+    //add progress model closing logic 
+    //update fetched file list
+
+    setIsContentUploading(false);
 
     setUploadProgressList((prev) =>
       prev.map((item) =>
         item.fileName === fileUpload.name ? { ...item, isCompleted: true } : item
       )
     );
-    setShowUploadModal(false);
+
     setFileUpload(null);
   };
 
@@ -107,6 +120,7 @@ const UploadBtn: React.FC = () => {
 
   const cancelUpload = (fileName: string) => {
     setUploadProgressList((prev) => prev.filter((item) => item.fileName !== fileName));
+    setFileUpload(null);
     toast({ title: `${fileName} upload canceled`, variant: 'destructive' });
   };
 
@@ -128,9 +142,9 @@ const UploadBtn: React.FC = () => {
         </Modal>
       )}
       <TooltipProvider>
-        <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
+        <Tooltip>
           <TooltipTrigger asChild>
-            <Button onClick={() => setShowTooltip(!showTooltip)} variant="secondary">
+            <Button onClick={() => setShowUploadModal(true)} variant="secondary">
               <Plus className="text-green-600 text-xl" />
               <span className="text-xl">Upload</span>
             </Button>
@@ -139,10 +153,7 @@ const UploadBtn: React.FC = () => {
             <ul className="text-sm text-gray-700">
               <li
                 className="px-4 py-2 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
-                onClick={() => {
-                  setShowUploadModal(true);
-                  setShowTooltip(false);
-                }}
+                onClick={() => setShowUploadModal(true)}
               >
                 File Upload
               </li>
@@ -150,26 +161,13 @@ const UploadBtn: React.FC = () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {
-        isContentUploading && <div className="fixed bottom-4 right-4 space-y-2 w-auto p-4 bg-muted text-white rounded shadow-lg">
-        {uploadProgressList.map((upload) => (
-          <div key={upload.fileName} className="flex justify-between items-center">
-            <div>
-              <p>{upload.fileName}</p>
-              <p>{upload.progress}%</p>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="ghost" onClick={() => togglePause(upload.fileName)} disabled={upload.isCompleted}>
-                {upload.isPaused ? <Play /> : <Pause />}
-              </Button>
-              <Button variant="destructive" onClick={() => cancelUpload(upload.fileName)}>
-                <X />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-      }
+      {isContentUploading && (
+        <ProgressBar
+          uploadProgressList={uploadProgressList}
+          togglePause={togglePause}
+          cancelUpload={cancelUpload}
+        />
+      )}
     </div>
   );
 };
