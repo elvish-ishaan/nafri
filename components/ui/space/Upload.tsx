@@ -73,6 +73,7 @@ const UploadBtn: React.FC = () => {
       formData.append('chunkNumber', i.toString()); // Fixed key mismatch
       formData.append('totalChunks', totalChunks.toString());
       formData.append('contentType', fileUpload.type); // Added file type
+      formData.append('fileSize', fileUpload.size.toString())
 
       try {
         const response = await uploadFileAws(formData);

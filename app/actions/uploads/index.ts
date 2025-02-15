@@ -49,14 +49,14 @@ export const uploadFileAws = async (formData: FormData) => {
         const chunkPath = path.join(TEMP_STORAGE, `${fileName}.part${chunkNumber}`);
         fs.writeFileSync(chunkPath, fileBuffer);
 
-        console.log('operation...........')
         // If it's the last chunk, merge and upload
         if (chunkNumber + 1 === totalChunks) {
             try {
                 await mergeChunks(fileName, totalChunks, fileExtension);
 
                 // Transaction: Update database only if S3 upload succeeds
-                await prisma.$transaction([
+                try {
+                  await prisma.$transaction([
                     prisma.uploads.create({
                         data: {
                             fileKey: fileName,
@@ -68,11 +68,14 @@ export const uploadFileAws = async (formData: FormData) => {
                     prisma.user.update({
                         where: { email: session.user?.email || '' },
                         data: {
-                            currentSpace: { increment: fileSize },
+                            currentSpace: { increment: BigInt(fileSize) },
                             recents: { create: { uploadType: fileExtension } },
                         },
                     }),
                 ]);
+                } catch (error) {
+                  console.log(error,'error in doing trrnasat.....db........')
+                }
 
                 return { success: true, message: 'Uploaded successfully' };
             } catch (error) {
@@ -111,8 +114,6 @@ async function mergeChunks(fileKey: string, totalChunks: number, fileExt: string
             ContentType: contentType[fileExt] || 'application/octet-stream',
         }));
 
-        console.log('Uploaded successfully to S3.');
-
         // Cleanup temporary files
         for (let i = 0; i < totalChunks; i++) {
             fs.unlinkSync(path.join(TEMP_STORAGE, `${fileKey}.part${i}`));
@@ -138,7 +139,7 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
   }
   //move files to bin
   try {
-    const updatedUpload = await prisma.uploads.update({
+     await prisma.uploads.update({
       where: {
         id: fileId, // Identify the record by its ID
       },
@@ -147,7 +148,6 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
         deleteDate: new Date(), // Optionally set the `deleteDate`
       },
     });
-    console.log(updatedUpload,'this si updload after del')
   } catch (error) {
     console.log(error,'error in moving files to bin')
     return {
