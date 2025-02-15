@@ -8,66 +8,121 @@ import { Modal } from './Modal';
 import { uploadFileAws } from '@/app/actions/uploads';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../input';
+import ProgressBar from './ProgressBar';
+
+const CHUNK_SIZE = 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 100 MB
+
+interface UploadProgress {
+  fileName: string;
+  progress: number;
+  isPaused: boolean;
+  isCompleted: boolean;
+}
 
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
-  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
-  const [uploadLoading, setUploadLoading] = useState<boolean>(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const { toast } = useToast();
+  const [uploadProgressList, setUploadProgressList] = useState<UploadProgress[]>([]);
+  const [isContentUploading, setIsContentUploading] = useState<boolean>(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
+    
+    if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
+      toast({ title: 'File size exceeds 100MB limit', variant: 'destructive' });
+      return;
+    }
+
     setFileUpload(selectedFile);
     setShowUploadModal(true);
-
-    // Reset file input so onChange triggers on selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleUpload = async () => {
     if (!fileUpload) {
-      toast({
-        title: 'No file selected',
-        variant: 'destructive',
-      });
+      toast({ title: 'No file selected', variant: 'destructive' });
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', fileUpload);
-
-    try {
-      setUploadLoading(true);
-      const upload = await uploadFileAws(formData);
-      
-      setUploadLoading(false);
-
-      if (upload?.success) {
-        toast({
-          title: 'Uploaded successfully',
-        });
-        //update the media list by refreshing the page
-        location.reload()
-        
-      } else {
-        toast({
-          title: upload?.message || 'Upload failed',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error in uploading', error);
-      toast({
-        title: 'Sorry, can’t upload the file',
-        variant: 'destructive',
-      });
-    }
     setShowUploadModal(false);
-    setFileUpload(null); // Reset file state after upload
+    setIsContentUploading(true);
+
+    const totalChunks = Math.ceil(fileUpload.size / CHUNK_SIZE);
+    let progress = 0;
+
+    const uploadProgress: UploadProgress = {
+      fileName: fileUpload.name,
+      progress,
+      isPaused: false,
+      isCompleted: false,
+    };
+    
+    setUploadProgressList((prev) => [...prev, uploadProgress]);
+
+    for (let i = 0; i < totalChunks; i++) {
+      if (uploadProgress.isPaused) break;
+
+      const chunk = fileUpload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      const formData = new FormData();
+      formData.append('chunk', chunk);
+      formData.append('fileName', fileUpload.name);
+      formData.append('chunkNumber', i.toString()); // Fixed key mismatch
+      formData.append('totalChunks', totalChunks.toString());
+      formData.append('contentType', fileUpload.type); // Added file type
+      formData.append('fileSize', fileUpload.size.toString())
+
+      try {
+        const response = await uploadFileAws(formData);
+
+        if (!response.success) {
+          toast({ title: 'Something went wrong', variant: 'destructive' });
+          break;
+        }
+
+        progress = Math.round(((i + 1) / totalChunks) * 100);
+        
+        setUploadProgressList((prev) =>
+          prev.map((item) =>
+            item.fileName === fileUpload.name ? { ...item, progress } : item
+          )
+        );
+
+      } catch (error) {
+        console.error('Upload failed:', error);
+        toast({ title: 'Upload failed. Resumable.', variant: 'destructive' });
+        break;
+      }
+    }
+    //add progress model closing logic 
+    //update fetched file list
+
+    setIsContentUploading(false);
+
+    setUploadProgressList((prev) =>
+      prev.map((item) =>
+        item.fileName === fileUpload.name ? { ...item, isCompleted: true } : item
+      )
+    );
+
+    setFileUpload(null);
+  };
+
+  const togglePause = (fileName: string) => {
+    setUploadProgressList((prev) =>
+      prev.map((item) =>
+        item.fileName === fileName ? { ...item, isPaused: !item.isPaused } : item
+      )
+    );
+  };
+
+  const cancelUpload = (fileName: string) => {
+    setUploadProgressList((prev) => prev.filter((item) => item.fileName !== fileName));
+    setFileUpload(null);
+    toast({ title: `${fileName} upload canceled`, variant: 'destructive' });
   };
 
   return (
@@ -78,22 +133,20 @@ const UploadBtn: React.FC = () => {
           title="Choose File to Upload"
           description="Choose the file you want to upload to the cloud"
           open={showUploadModal}
-          footerBtn={uploadLoading ? 'Loading...' : 'Upload'}
-          onAction={uploadLoading ? () => {} : handleUpload}
+          footerBtn="Upload"
+          onAction={handleUpload}
         >
           <div>
-            { fileUpload && <span>{fileUpload.name}</span> }
+            {fileUpload && <span>{fileUpload.name}</span>}
             <Input ref={fileInputRef} type="file" onChange={handleFileChange} />
           </div>
         </Modal>
       )}
       <TooltipProvider>
-        <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
+        <Tooltip>
           <TooltipTrigger asChild>
-            <Button onClick={() => setShowTooltip(!showTooltip)} variant="secondary">
-              <span className="text-green-600 text-xl">
-                <Plus />
-              </span>
+            <Button onClick={() => setShowUploadModal(true)} variant="secondary">
+              <Plus className="text-green-600 text-xl" />
               <span className="text-xl">Upload</span>
             </Button>
           </TooltipTrigger>
@@ -101,10 +154,7 @@ const UploadBtn: React.FC = () => {
             <ul className="text-sm text-gray-700">
               <li
                 className="px-4 py-2 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
-                onClick={() => {
-                  setShowUploadModal(true);
-                  setShowTooltip(false);
-                }}
+                onClick={() => setShowUploadModal(true)}
               >
                 File Upload
               </li>
@@ -112,6 +162,13 @@ const UploadBtn: React.FC = () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      {isContentUploading && (
+        <ProgressBar
+          uploadProgressList={uploadProgressList}
+          togglePause={togglePause}
+          cancelUpload={cancelUpload}
+        />
+      )}
     </div>
   );
 };

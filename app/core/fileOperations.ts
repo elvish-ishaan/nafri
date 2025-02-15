@@ -105,7 +105,7 @@ export const uploadFileToS3 = async (formData: FormData, email: string) => {
 export const deleteFileFromS3 = async (fileId: string) => {
   //move files to bin
   try {
-    const updatedUpload = await prisma.uploads.update({
+     await prisma.uploads.update({
       where: {
         id: fileId, // Identify the record by its ID
       },
@@ -114,7 +114,6 @@ export const deleteFileFromS3 = async (fileId: string) => {
         deleteDate: new Date(), // Optionally set the `deleteDate`
       },
     });
-    console.log(updatedUpload,'this si updload after del')
   } catch (error) {
     console.log(error,'error in moving files to bin')
     return {

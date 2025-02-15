@@ -44,7 +44,6 @@ export const generateApiKey = async () => {
             },
             include:{apiKeys: true}
         })
-        console.log(user,'this is user with api key')
         if(!user){
             return {
                 success: false,
