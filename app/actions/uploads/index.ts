@@ -14,7 +14,7 @@ import crypto from "crypto";
 const TEMP_STORAGE = '/tmp/uploads'; // Temporary storage for chunks
 
 // Function to compute file hash
-const computeFileHash = async (fileBuffer: Buffer): Promise<string> => {
+export const computeFileHash = async (fileBuffer: Buffer): Promise<string> => {
     return crypto.createHash('sha256').update(fileBuffer).digest('hex');
 };
 
