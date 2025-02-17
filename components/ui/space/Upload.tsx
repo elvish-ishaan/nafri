@@ -9,6 +9,7 @@ import { uploadFileAws } from '@/app/actions/uploads';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../input';
 import ProgressBar from './ProgressBar';
+import { useRouter } from 'next/navigation';
 
 const CHUNK_SIZE = 1024 * 1024; // 1 MB
 const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 100 MB
@@ -16,8 +17,7 @@ const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 100 MB
 interface UploadProgress {
   fileName: string;
   progress: number;
-  isPaused: boolean;
-  isCompleted: boolean;
+  isCompleted?: boolean;
 }
 
 const UploadBtn: React.FC = () => {
@@ -27,6 +27,8 @@ const UploadBtn: React.FC = () => {
   const { toast } = useToast();
   const [uploadProgressList, setUploadProgressList] = useState<UploadProgress[]>([]);
   const [isContentUploading, setIsContentUploading] = useState<boolean>(false);
+  const [stoppedFiles, setStoppedFiles] = useState<Set<string>>(new Set());
+  const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -47,81 +49,87 @@ const UploadBtn: React.FC = () => {
       toast({ title: 'No file selected', variant: 'destructive' });
       return;
     }
-
+  
     setShowUploadModal(false);
     setIsContentUploading(true);
-
+  
     const totalChunks = Math.ceil(fileUpload.size / CHUNK_SIZE);
     let progress = 0;
-
-    const uploadProgress: UploadProgress = {
-      fileName: fileUpload.name,
-      progress,
-      isPaused: false,
-      isCompleted: false,
-    };
-    
-    setUploadProgressList((prev) => [...prev, uploadProgress]);
-
+  
+    setUploadProgressList((prev) => [
+      ...prev,
+      {
+        fileName: fileUpload.name,
+        progress: 0,
+        isCompleted: false,
+      },
+    ]);
+  
     for (let i = 0; i < totalChunks; i++) {
-      if (uploadProgress.isPaused) break;
-
+      // Check if upload was canceled
+      if (stoppedFiles.has(fileUpload.name)) {
+        //set content uploading modal to false if nothing is uploading
+        if(uploadProgressList.length === 0) setIsContentUploading(false)
+        return;
+      }
+  
       const chunk = fileUpload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
       const formData = new FormData();
       formData.append('chunk', chunk);
       formData.append('fileName', fileUpload.name);
-      formData.append('chunkNumber', i.toString()); // Fixed key mismatch
+      formData.append('chunkNumber', i.toString());
       formData.append('totalChunks', totalChunks.toString());
-      formData.append('contentType', fileUpload.type); // Added file type
-      formData.append('fileSize', fileUpload.size.toString())
-
+      formData.append('contentType', fileUpload.type);
+      formData.append('fileSize', fileUpload.size.toString());
+  
       try {
         const response = await uploadFileAws(formData);
-
+  
         if (!response.success) {
-          toast({ title: 'Something went wrong', variant: 'destructive' });
+          toast({ title: response?.message, variant: 'destructive' });
           break;
         }
-
+  
+        if (response.isCompleted) {
+          router.refresh();
+        }
+  
         progress = Math.round(((i + 1) / totalChunks) * 100);
-        
+  
         setUploadProgressList((prev) =>
           prev.map((item) =>
             item.fileName === fileUpload.name ? { ...item, progress } : item
           )
         );
-
+  
       } catch (error) {
         console.error('Upload failed:', error);
         toast({ title: 'Upload failed. Resumable.', variant: 'destructive' });
         break;
       }
     }
-    //add progress model closing logic 
-    //update fetched file list
-
-    setIsContentUploading(false);
-
+  
+  
     setUploadProgressList((prev) =>
       prev.map((item) =>
         item.fileName === fileUpload.name ? { ...item, isCompleted: true } : item
       )
     );
 
+    setIsContentUploading(false);
+  
     setFileUpload(null);
   };
-
-  const togglePause = (fileName: string) => {
-    setUploadProgressList((prev) =>
-      prev.map((item) =>
-        item.fileName === fileName ? { ...item, isPaused: !item.isPaused } : item
-      )
-    );
-  };
-
+  
+  
   const cancelUpload = (fileName: string) => {
+    setStoppedFiles((prev) => {
+      if (!prev.has(fileName)) {
+        return prev.add(fileName);
+      }
+      return prev;
+    });    
     setUploadProgressList((prev) => prev.filter((item) => item.fileName !== fileName));
-    setFileUpload(null);
     toast({ title: `${fileName} upload canceled`, variant: 'destructive' });
   };
 
@@ -165,7 +173,6 @@ const UploadBtn: React.FC = () => {
       {isContentUploading && (
         <ProgressBar
           uploadProgressList={uploadProgressList}
-          togglePause={togglePause}
           cancelUpload={cancelUpload}
         />
       )}

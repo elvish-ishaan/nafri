@@ -16,13 +16,18 @@ export const landNavLinks = [
         path: '/aboutus'
     },
     {
-        id: 3,
+        id: 4,
         title: 'Docs',
         path: '/docs'
     },
     {
-        id: 3,
+        id: 5,
         title: 'Pricing',
         path: '/pricing'
+    },
+    {
+        id: 6,
+        title: 'Blogs',
+        path: '/blogs'
     }
 ]

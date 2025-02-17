@@ -2,6 +2,8 @@ import prisma from "@/prisma/prismaClient";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { Bucket, s3 } from "@/app/configs/awsConfig";
 import { contentType } from "@/lib/contentTypes";
+import { computeFileHash } from "../actions/uploads";
+
 
 
 export const uploadFileToS3 = async (formData: FormData, email: string) => {
@@ -31,11 +33,15 @@ export const uploadFileToS3 = async (formData: FormData, email: string) => {
       }
     try {
       let fileExtension:(string | undefined)
+      let fileHash: string;
       try {
         //get the extension of the uploaded file
          fileExtension = fileName.split('.').pop()?.toLowerCase() ?? 'unknown';
         //conver file to buffer before uploading
         const fileBuffer = Buffer.from(await file.arrayBuffer());
+        //computing hash
+        fileHash = await computeFileHash(fileBuffer)
+
         const uploadToS3 = new PutObjectCommand({
             Bucket,
             Key: fileName,
@@ -57,6 +63,7 @@ export const uploadFileToS3 = async (formData: FormData, email: string) => {
           prisma.uploads.create({
             data: {
               fileKey: fileName,
+              hash: fileHash,
               uploadDate: new Date().toISOString(),
               fileType: fileExtension,
               userEmail: email || '',
