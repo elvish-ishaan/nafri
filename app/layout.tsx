@@ -4,7 +4,6 @@ import { ThemeProvider } from "./ThemeProvider";
 import AuthProvider from "./AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 
-
 export const metadata: Metadata = {
   title: "Nafri - Next Gen Cloud Storage",
   description: "An all-in-one secure cloud storage solution",
@@ -34,7 +33,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Toaster />
-              {children}
+            {children}
           </ThemeProvider>
         </AuthProvider>
         </body>

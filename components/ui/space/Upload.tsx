@@ -9,6 +9,7 @@ import { uploadFileAws } from '@/app/actions/uploads';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../input';
 import ProgressBar from './ProgressBar';
+import { useRouter } from 'next/navigation';
 
 const CHUNK_SIZE = 1024 * 1024; // 1 MB
 const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 100 MB
@@ -27,6 +28,7 @@ const UploadBtn: React.FC = () => {
   const { toast } = useToast();
   const [uploadProgressList, setUploadProgressList] = useState<UploadProgress[]>([]);
   const [isContentUploading, setIsContentUploading] = useState<boolean>(false);
+  const router = useRouter()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -47,69 +49,79 @@ const UploadBtn: React.FC = () => {
       toast({ title: 'No file selected', variant: 'destructive' });
       return;
     }
-
+  
     setShowUploadModal(false);
     setIsContentUploading(true);
-
+  
     const totalChunks = Math.ceil(fileUpload.size / CHUNK_SIZE);
     let progress = 0;
-
-    const uploadProgress: UploadProgress = {
-      fileName: fileUpload.name,
-      progress,
-      isPaused: false,
-      isCompleted: false,
-    };
-    
-    setUploadProgressList((prev) => [...prev, uploadProgress]);
-
+  
+    setUploadProgressList((prev) => [
+      ...prev,
+      {
+        fileName: fileUpload.name,
+        progress: 0,
+        isPaused: false,
+        isCompleted: false,
+      },
+    ]);
+  
     for (let i = 0; i < totalChunks; i++) {
-      if (uploadProgress.isPaused) break;
-
+      const currentUpload = uploadProgressList.find((item) => item.fileName === fileUpload.name);
+  
+      // Fetch latest state dynamically
+      if (currentUpload?.isPaused) {
+        break;
+      }
+  
       const chunk = fileUpload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
       const formData = new FormData();
       formData.append('chunk', chunk);
       formData.append('fileName', fileUpload.name);
-      formData.append('chunkNumber', i.toString()); // Fixed key mismatch
+      formData.append('chunkNumber', i.toString());
       formData.append('totalChunks', totalChunks.toString());
-      formData.append('contentType', fileUpload.type); // Added file type
-      formData.append('fileSize', fileUpload.size.toString())
-
+      formData.append('contentType', fileUpload.type);
+      formData.append('fileSize', fileUpload.size.toString());
+  
       try {
         const response = await uploadFileAws(formData);
-
+          
         if (!response.success) {
-          toast({ title: 'Something went wrong', variant: 'destructive' });
+          toast({ title: response?.message, variant: 'destructive' });
           break;
         }
 
+        //when upload completed, refresh the page
+        if(response.isCompleted){
+          router.refresh()
+        }
+  
         progress = Math.round(((i + 1) / totalChunks) * 100);
-        
+  
         setUploadProgressList((prev) =>
           prev.map((item) =>
             item.fileName === fileUpload.name ? { ...item, progress } : item
           )
         );
-
+  
       } catch (error) {
         console.error('Upload failed:', error);
         toast({ title: 'Upload failed. Resumable.', variant: 'destructive' });
         break;
       }
     }
-    //add progress model closing logic 
-    //update fetched file list
-
+  
     setIsContentUploading(false);
-
+  
     setUploadProgressList((prev) =>
       prev.map((item) =>
         item.fileName === fileUpload.name ? { ...item, isCompleted: true } : item
       )
     );
-
+  
     setFileUpload(null);
   };
+  
 
   const togglePause = (fileName: string) => {
     setUploadProgressList((prev) =>

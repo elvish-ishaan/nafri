@@ -1,19 +1,30 @@
+"use client"
 export const dynamic = 'force-dynamic';
 
 import { fetchAllUploads } from '@/app/actions/uploads'
-import { UploadsTable } from '@/components/ui/space/UploadsTable'
-import React from 'react'
+import { FileMetaData, UploadsTable } from '@/components/ui/space/UploadsTable'
+import React, { useEffect, useState } from 'react'
 
-const Page = async () => {
-  let uploadFiles;
+const fetchData = async () => {
   try {
-    uploadFiles = await fetchAllUploads();
+    const uploadFiles = await fetchAllUploads();
+    return uploadFiles;
   } catch (error) {
     console.log(error, 'cant fetch uploads');
   }
+}
 
-  // Ensure uploadFiles?.uploads?.uploadsMetaData is always an array
-  const filesData = uploadFiles?.uploads?.uploadsMetaData ?? [];
+const Page = () => {
+  const [filesData, setFilesData] = useState<FileMetaData[] | []>([])
+
+  useEffect(() => {
+    const getData = async () => {
+      const res = await fetchData()
+      setFilesData(res?.uploads?.uploadsMetaData ?? [])
+        }
+    getData()
+    
+  },[])
 
   return (
     <section>

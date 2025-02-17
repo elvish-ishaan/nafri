@@ -7,9 +7,16 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { contentType } from "@/lib/contentTypes";
 import fs from 'fs';
 import path from 'path';
+import crypto from "crypto";
+
 
 
 const TEMP_STORAGE = '/tmp/uploads'; // Temporary storage for chunks
+
+// Function to compute file hash
+const computeFileHash = async (fileBuffer: Buffer): Promise<string> => {
+    return crypto.createHash('sha256').update(fileBuffer).digest('hex');
+};
 
 export const uploadFileAws = async (formData: FormData) => {
     const session = await getServerSession();
@@ -28,7 +35,6 @@ export const uploadFileAws = async (formData: FormData) => {
     const user = await prisma.user.findUnique({
         where: { email: session.user?.email || '' },
     });
-
     if (!user) return { success: false, message: 'User not found' };
 
     const expectedStorage = Number(user.currentSpace) + fileSize;
@@ -52,15 +58,46 @@ export const uploadFileAws = async (formData: FormData) => {
         // If it's the last chunk, merge and upload
         if (chunkNumber + 1 === totalChunks) {
             try {
-                await mergeChunks(fileName, totalChunks, fileExtension);
+                const chunkBuffers: Buffer[] = [];
+                for (let i = 0; i < totalChunks; i++) {
+                    const chunkFilePath = path.join(TEMP_STORAGE, `${fileName}.part${i}`);
+                    if (!fs.existsSync(chunkFilePath)) {
+                        throw new Error(`Missing chunk: ${chunkFilePath}`);
+                    }
+                    chunkBuffers.push(fs.readFileSync(chunkFilePath));
+                }
 
-                // Transaction: Update database only if S3 upload succeeds
-                try {
-                  await prisma.$transaction([
+                const mergedBuffer = Buffer.concat(chunkBuffers);
+                const fileHash = await computeFileHash(mergedBuffer);
+
+                // Check if file already exists
+                const existingFile = await prisma.uploads.findUnique({ where: { hash: fileHash } });
+                if (existingFile) {
+                    return { success: false, message: 'File already exists' };
+                }
+
+                // Upload to S3
+                await s3.send(
+                    new PutObjectCommand({
+                        Bucket,
+                        Key: fileName,
+                        Body: mergedBuffer,
+                        ContentType: contentType[fileExtension] || 'application/octet-stream',
+                    })
+                );
+
+                // Cleanup temporary files
+                for (let i = 0; i < totalChunks; i++) {
+                    fs.unlinkSync(path.join(TEMP_STORAGE, `${fileName}.part${i}`));
+                }
+
+                // Update database transactionally
+                await prisma.$transaction([
                     prisma.uploads.create({
                         data: {
                             fileKey: fileName,
                             uploadDate: new Date().toISOString(),
+                            hash: fileHash,
                             fileType: fileExtension,
                             userEmail: session.user?.email || '',
                         },
@@ -73,57 +110,27 @@ export const uploadFileAws = async (formData: FormData) => {
                         },
                     }),
                 ]);
-                } catch (error) {
-                  console.log(error,'error in doing trasaction.....db........')
-                }
 
-                return { success: true, isCompleted: true, message: 'Uploaded successfully' };
+                //return new uploads to client
+                const uploads = await prisma.uploads.findMany({
+                  where: {
+                    userEmail: session.user?.email || ''
+                  }
+                })
+
+                return { success: true, isCompleted: true, message: 'Uploaded successfully', uploads };
             } catch (error) {
                 console.error('Error in merging/uploading:', error);
                 return { success: false, message: 'Upload failed' };
             }
         }
 
-        return { success: true, isCompleted: false , message: `Chunk ${chunkNumber + 1}/${totalChunks} received` };
-
+        return { success: true, isCompleted: false, message: `Chunk ${chunkNumber + 1}/${totalChunks} received` };
     } catch (error) {
-        console.error(error);
+        console.error('Internal server error:', error);
         return { success: false, message: 'Internal server error' };
     }
 };
-
-// Merge chunks and upload to S3
-async function mergeChunks(fileKey: string, totalChunks: number, fileExt: string) {
-    try {
-        const chunkBuffers: Buffer[] = [];
-
-        for (let i = 0; i < totalChunks; i++) {
-            const chunkPath = path.join(TEMP_STORAGE, `${fileKey}.part${i}`);
-            if (!fs.existsSync(chunkPath)) {
-                throw new Error(`Missing chunk: ${chunkPath}`);
-            }
-            chunkBuffers.push(fs.readFileSync(chunkPath));
-        }
-
-        const mergedBuffer = Buffer.concat(chunkBuffers);
-
-        await s3.send(new PutObjectCommand({
-            Bucket: Bucket,
-            Key: fileKey,
-            Body: mergedBuffer,
-            ContentType: contentType[fileExt] || 'application/octet-stream',
-        }));
-
-        // Cleanup temporary files
-        for (let i = 0; i < totalChunks; i++) {
-            fs.unlinkSync(path.join(TEMP_STORAGE, `${fileKey}.part${i}`));
-        }
-
-    } catch (error) {
-        console.error('Error merging/uploading:', error);
-        throw error; // Ensure failure is propagated
-    }
-}
 
 
 
@@ -148,7 +155,6 @@ export const deleteFileAws = async (toDelfileKey: string, fileId: string) => {
         deleteDate: new Date(), // Optionally set the `deleteDate`
       },
     });
-    console.log('file deleted...........')
   } catch (error) {
     console.log(error,'error in moving files to bin')
     return {

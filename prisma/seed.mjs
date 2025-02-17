@@ -31,6 +31,7 @@ async function main() {
       {
         fileKey: 'user1-file1.jpg',
         uploadDate: new Date().toISOString(),
+        hash: '2ea0e6f08139430c7ccc7bc69f8823d6749ddf7f457663db9f4e33e2d41d7fdd',
         fileType: 'jpg',
         userEmail: user1.email,
         starred: false
@@ -38,6 +39,7 @@ async function main() {
       {
         fileKey: 'user1-file2.jpg',
         uploadDate: new Date().toISOString(),
+        hash: '2ea0e6f08139430c7ccc7bc69f8823d6849ddf7f457663db9f4e33e2d41d7fdd',
         fileType: 'jpg',
         userEmail: user1.email,
         starred: false
@@ -45,6 +47,7 @@ async function main() {
       {
         fileKey: 'dev-file1.jpg',
         uploadDate: new Date().toISOString(),
+        hash: '2ea0e6f08139430c7ccc7bc69f8823t6749ddf7f457663db9f4e33e2d41d7fdd',
         fileType: 'jpg',
         userEmail: devUser.email,
         starred: true
