@@ -7,11 +7,19 @@ import Initials from "@/components/ui/mianLanding/Initials";
 import { MotionCards } from "@/components/ui/mianLanding/MotionCards";
 import Reviews from "@/components/ui/mianLanding/Reviews";
 import NavBar from "@/components/ui/nav/NavBar";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export default function Home() {
   const featuresRef = useRef<HTMLDivElement>(null);
+  const {data: session} = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    router.push('/dashboard')
+  },[ session?.user, router])
 
   const scrollToFeatures = () => {
     featuresRef.current?.scrollIntoView({ behavior: "smooth" });

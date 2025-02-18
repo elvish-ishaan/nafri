@@ -20,6 +20,24 @@ interface UploadProgress {
   isCompleted?: boolean;
 }
 
+//function to estimate speed of client
+const estimateUploadSpeed = async (): Promise<number> => {
+  const testChunkSize = 256 * 1024; // 256 KB
+  const testChunk = new Blob([new Uint8Array(testChunkSize)]);
+  const formData = new FormData();
+  formData.append('chunk', testChunk);
+  formData.append('fileName', 'speed-test');
+  formData.append('chunkNumber', '0');
+  formData.append('totalChunks', '1');
+
+  const startTime = performance.now();
+  await uploadFileAws(formData); // Upload a small test chunk
+  const endTime = performance.now();
+
+  const duration = (endTime - startTime) / 1000; // Convert to seconds
+  return testChunkSize / duration / 1024; // Speed in KB/s
+};
+
 const UploadBtn: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileUpload, setFileUpload] = useState<File | null>(null);
@@ -53,27 +71,31 @@ const UploadBtn: React.FC = () => {
     setShowUploadModal(false);
     setIsContentUploading(true);
   
-    const totalChunks = Math.ceil(fileUpload.size / CHUNK_SIZE);
+    // Estimate the upload speed
+    const uploadSpeed = await estimateUploadSpeed();
+      
+    // Dynamically adjust chunk size based on speed
+    let dynamicChunkSize = CHUNK_SIZE; // Default 1MB
+    if (uploadSpeed < 500) {
+      dynamicChunkSize = 256 * 1024; // 256 KB for slow connections
+    } else if (uploadSpeed > 2000) {
+      dynamicChunkSize = 4 * 1024 * 1024; // 4 MB for fast connections
+    }
+    
+    const totalChunks = Math.ceil(fileUpload.size / dynamicChunkSize);
     let progress = 0;
   
     setUploadProgressList((prev) => [
       ...prev,
-      {
-        fileName: fileUpload.name,
-        progress: 0,
-        isCompleted: false,
-      },
+      { fileName: fileUpload.name, progress: 0, isCompleted: false },
     ]);
   
     for (let i = 0; i < totalChunks; i++) {
-      // Check if upload was canceled
       if (stoppedFiles.has(fileUpload.name)) {
-        //set content uploading modal to false if nothing is uploading
-        if(uploadProgressList.length === 0) setIsContentUploading(false)
-        return;
+        break;
       }
   
-      const chunk = fileUpload.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      const chunk = fileUpload.slice(i * dynamicChunkSize, (i + 1) * dynamicChunkSize);
       const formData = new FormData();
       formData.append('chunk', chunk);
       formData.append('fileName', fileUpload.name);
@@ -95,13 +117,9 @@ const UploadBtn: React.FC = () => {
         }
   
         progress = Math.round(((i + 1) / totalChunks) * 100);
-  
         setUploadProgressList((prev) =>
-          prev.map((item) =>
-            item.fileName === fileUpload.name ? { ...item, progress } : item
-          )
+          prev.map((item) => (item.fileName === fileUpload.name ? { ...item, progress } : item))
         );
-  
       } catch (error) {
         console.error('Upload failed:', error);
         toast({ title: 'Upload failed. Resumable.', variant: 'destructive' });
@@ -109,15 +127,10 @@ const UploadBtn: React.FC = () => {
       }
     }
   
-  
-    setUploadProgressList((prev) =>
-      prev.map((item) =>
-        item.fileName === fileUpload.name ? { ...item, isCompleted: true } : item
-      )
-    );
-
     setIsContentUploading(false);
-  
+    setUploadProgressList((prev) =>
+      prev.map((item) => (item.fileName === fileUpload.name ? { ...item, isCompleted: true } : item))
+    );
     setFileUpload(null);
   };
   
