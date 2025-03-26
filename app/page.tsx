@@ -5,7 +5,9 @@ import Footer from "@/components/ui/mianLanding/Footer";
 import Initials from "@/components/ui/mianLanding/Initials";
 import Reviews from "@/components/ui/mianLanding/Reviews";
 import NavBar from "@/components/ui/nav/NavBar";
-import { useRef } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import HeroImg from "@/components/ui/mianLanding/HeroImg";
 import Link from "next/link";
@@ -13,6 +15,12 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const featuresRef = useRef<HTMLDivElement>(null);
+  const {data: session} = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    router.push('/dashboard')
+  },[ session?.user, router])
 
   const scrollToFeatures = () => {
     featuresRef.current?.scrollIntoView({ behavior: "smooth" });
