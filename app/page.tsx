@@ -19,7 +19,9 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    router.push('/dashboard')
+    if (session?.user) {
+      router.push('/dashboard')
+    }
   },[ session?.user, router])
 
   const scrollToFeatures = () => {
