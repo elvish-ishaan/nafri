@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { FileModal } from "./FileModal";
 import { format } from "date-fns"; // date-fns for formatting
@@ -34,12 +35,15 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileMetaData | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
 
   useEffect(() => {
     if (filesData.length > 0) {
       setUploadFiles(filesData);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
     }
   }, [filesData]);
 
@@ -84,6 +88,21 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
     file.fileKey.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const TableRowSkeleton = () => (
+    <TableRow>
+      <TableCell><Skeleton className="h-6 w-[250px]" /></TableCell>
+      <TableCell><Skeleton className="h-6 w-[180px]" /></TableCell>
+      <TableCell><Skeleton className="h-6 w-[200px]" /></TableCell>
+      <TableCell>
+        <div className="flex gap-3">
+          <Skeleton className="h-6 w-6" />
+          <Skeleton className="h-6 w-[40px]" />
+        </div>
+      </TableCell>
+      <TableCell><Skeleton className="h-6 w-6 ml-auto" /></TableCell>
+    </TableRow>
+  );
+
   return (
     <>      
         <div className="mb-4 mt-10">
@@ -114,7 +133,16 @@ export function UploadsTable({ filesData }: { filesData: FileMetaData[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredFiles?.length === 0 ? (
+          {isLoading ? (
+            // Show 5 skeleton rows while loading
+            <>
+              <TableRowSkeleton />
+              <TableRowSkeleton />
+              <TableRowSkeleton />
+              <TableRowSkeleton />
+              <TableRowSkeleton />
+            </>
+          ) : filteredFiles?.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="text-center">
                 Sorry, no files found.
