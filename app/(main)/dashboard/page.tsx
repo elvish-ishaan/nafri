@@ -16,12 +16,14 @@ const Page = async () => {
   const filesData = uploadFiles?.uploads?.uploadsMetaData ?? [];
 
   return (
-    <section>
+    <section className="mx-auto w-full max-w-full pb-12">
       <div className='flex flex-col items-center gap-4 w-full'>
-        <h1 className='text-muted-foreground text-3xl'>Welcome To Next Cloud</h1>
+        <h1 className='text-muted-foreground text-xl sm:text-2xl md:text-3xl font-medium text-center px-4'>
+          Welcome To Next Cloud
+        </h1>
       </div>
       {/* Pass filesData as an array */}
-      <div className='mt-10'>
+      <div className='mt-4 sm:mt-6 md:mt-10 px-2 sm:px-0'>
         <UploadsTable filesData={filesData} />
       </div>
     </section>

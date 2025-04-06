@@ -1,9 +1,0 @@
-make universal file viewer 
-cron job for deleting file regularly
-write blog page with admin upload functionality
-add seo to optimise app
-background and chunk uploading files
-
-
-#MAJOR IMPROVEMENTS:
--> make responsible ui

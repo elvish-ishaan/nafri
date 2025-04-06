@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Plus } from 'lucide-react';
+import { Plus, Upload as UploadIcon } from 'lucide-react';
 import { Modal } from './Modal';
 import { uploadFileAws } from '@/app/actions/uploads';
 import { useToast } from '@/hooks/use-toast';
@@ -147,7 +147,7 @@ const UploadBtn: React.FC = () => {
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="relative w-full">
       {showUploadModal && (
         <Modal
           onClose={() => setShowUploadModal(false)}
@@ -157,37 +157,64 @@ const UploadBtn: React.FC = () => {
           footerBtn="Upload"
           onAction={handleUpload}
         >
-          <div>
-            {fileUpload && <span>{fileUpload.name}</span>}
+          <div className="space-y-4">
+            {fileUpload && (
+              <div className="text-sm truncate">
+                Selected: <span className="font-medium">{fileUpload.name}</span>
+              </div>
+            )}
             <Input ref={fileInputRef} type="file" onChange={handleFileChange} />
           </div>
         </Modal>
       )}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button onClick={() => setShowUploadModal(true)} variant="secondary">
-              <Plus className="text-green-600 text-xl" />
-              <span className="text-xl">Upload</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right" align="center" className="p-2 w-48 shadow-lg rounded">
-            <ul className="text-sm text-gray-700">
-              <li
-                className="px-4 py-2 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
-                onClick={() => setShowUploadModal(true)}
+      
+      {/* Mobile view: simplified button */}
+      <div className="md:hidden w-full">
+        <Button 
+          onClick={() => setShowUploadModal(true)} 
+          variant="secondary"
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <UploadIcon className="h-5 w-5 text-green-600" />
+          <span>Upload</span>
+        </Button>
+      </div>
+      
+      {/* Desktop view: button with tooltip */}
+      <div className="hidden md:block">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={() => setShowUploadModal(true)} 
+                variant="secondary"
+                className="w-full flex items-center justify-center gap-2"
               >
-                File Upload
-              </li>
-            </ul>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+                <Plus className="text-green-600 h-5 w-5" />
+                <span className="text-base sm:text-lg">Upload</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center" className="p-2 w-48 shadow-lg rounded">
+              <ul className="text-sm text-gray-700">
+                <li
+                  className="px-4 py-2 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
+                  onClick={() => setShowUploadModal(true)}
+                >
+                  File Upload
+                </li>
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
       {isContentUploading && (
-        <ProgressBar
-          uploadProgressList={uploadProgressList}
-          cancelUpload={cancelUpload}
-        />
+        <div className="fixed bottom-4 right-4 z-50 max-w-md w-full p-4 bg-background border rounded-lg shadow-lg">
+          <ProgressBar
+            uploadProgressList={uploadProgressList}
+            cancelUpload={cancelUpload}
+          />
+        </div>
       )}
     </div>
   );

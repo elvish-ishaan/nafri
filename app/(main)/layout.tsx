@@ -8,17 +8,18 @@ interface SidebarLayoutProps {
 
 export default function Layout({ children }: SidebarLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Fixed Sidebar */}
-      <aside className="w-64 flex-shrink-0">
-        <div className="h-full overflow-y-aut">
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+      {/* Sidebar - hidden on mobile, visible on md and up */}
+      <aside className="hidden md:block md:w-64 flex-shrink-0">
+        <div className="h-full overflow-y-auto">
             <SideBar/>
         </div>
       </aside>
+      
       {/* Main content area */}
       <main className="flex-1 overflow-x-hidden overflow-y-auto">
         <DashNav/>
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
           {children}
         </div>
       </main>

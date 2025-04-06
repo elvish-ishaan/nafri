@@ -29,29 +29,31 @@ export default function Home() {
   };
 
   return (
-    <section>
+    <section className="overflow-x-hidden">
       <div className="min-h-screen relative">
         <div className="relative z-20">
           <NavBar />
-          <Initials />
-          <div className="flex flex-col justify-center items-center -mt-5">
-            <p className="text-muted-foreground">Get Free 20 GB Of Storage</p>
-            <div className="flex justify-center mt-5 gap-5">
-              <Link href="/auth/sign-in" className="relative z-20">
-                <Button className="relative pointer-events-auto">
-                  <span>Get Started</span>
+          <div className="container mx-auto px-4 sm:px-6 md:px-8">
+            <Initials />
+            <div className="flex flex-col justify-center items-center mt-4 sm:mt-0">
+              <p className="text-muted-foreground text-center px-4">Get Free 20 GB Of Storage</p>
+              <div className="flex justify-center mt-4 sm:mt-5 gap-3 sm:gap-5">
+                <Link href="/auth/sign-in" className="relative z-20">
+                  <Button className="relative pointer-events-auto">
+                    <span>Get Started</span>
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  onClick={scrollToFeatures}
+                  className="relative pointer-events-auto z-20"
+                >
+                  Learn More
                 </Button>
-              </Link>
-              <Button 
-                variant="outline" 
-                onClick={scrollToFeatures}
-                className="relative pointer-events-auto z-20"
-              >
-                Learn More
-              </Button>
+              </div>
             </div>
+            <HeroImg/>
           </div>
-          <HeroImg/>
         </div>
         <BackgroundBeams className="absolute inset-0 z-10 pointer-events-none" />
       </div>

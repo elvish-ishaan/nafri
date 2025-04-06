@@ -2,15 +2,16 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { DialogDescription, DialogTitle } from '../dialog'
 import { Button } from '../button'
-import {  Download, Plus, Redo2, Share2, Star, } from 'lucide-react'
+import { Download, Menu, Plus, Redo2, Share2, Star, X } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { addFileToSpace, addToStarred, fetchSignedUrl, restoreFile } from '@/app/actions/uploads'
 import { useSession } from 'next-auth/react'
+import { Popover, PopoverContent, PopoverTrigger } from '../popover'
 
 //refactor the whole props send filedetails as whole object and then
 //extract other info from it
 
-const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
+const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner, fileUrl}:
   {fileKey: string, uploadDate: string, fileId: string, starred: boolean, fileOwner: string, fileUrl: string}) => {
     const [addedToStarred, setAddedToStarred] = useState<boolean>(starred)
     const { toast } = useToast()
@@ -20,7 +21,7 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
     const [currentPath, setCurrentPath] = useState('');
     const [isRestored, setIsRestored] = useState<boolean>(false)
     const [downloadUrl, setDownloadUrl] = useState<string>('')
-
+    const [showMobileActions, setShowMobileActions] = useState(false)
 
     const fetchDownLink = useCallback(async () => { 
       const res = await fetchSignedUrl(fileKey, true)
@@ -57,7 +58,7 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
        navigator.clipboard.writeText( baseUrl + "/share" + "/" + fileId)
        setCopySatus(true)
-       setInterval(() => {
+       setTimeout(() => {
         setCopySatus(false)
        }, 2000);
     }
@@ -102,43 +103,128 @@ const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
     }
 
   return (
-    <div className="flex justify-between items-center">
-          <div className='flex flex-col mb-4'>
-            <DialogTitle>{fileKey}</DialogTitle>
-            <DialogDescription className=" mt-1">
-              {new Date(uploadDate).toLocaleString()}
-            </DialogDescription>
-          </div>
-           
-           <div>
-             {
-              data?.user?.email !== fileOwner && <Button onClick={ () => addToSpace(fileId)}>
-                {
-                  !addedFileStatus ? <span className=' flex gap-2'><Plus/>Add To Space</span> :
-                   <span className={addedFileStatus && 'text-green-600'}>Added</span>
-                }
-              </Button>
-             }
-           </div>
-        
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+      {/* File info section */}
+      <div className='flex flex-col mb-2 sm:mb-4'>
+        <DialogTitle className="text-base sm:text-lg md:text-xl truncate max-w-[250px] sm:max-w-[300px] md:max-w-full">
+          {fileKey}
+        </DialogTitle>
+        <DialogDescription className="mt-1 text-xs sm:text-sm">
+          {new Date(uploadDate).toLocaleString()}
+        </DialogDescription>
+      </div>
+      
+      {/* Add to space button (desktop) */}
+      <div className="hidden sm:block">
+        {data?.user?.email !== fileOwner && (
+          <Button onClick={() => addToSpace(fileId)}>
+            {!addedFileStatus ? (
+              <span className="flex gap-2"><Plus/>Add To Space</span>
+            ) : (
+              <span className={addedFileStatus ? 'text-green-600' : ''}>Added</span>
+            )}
+          </Button>
+        )}
+      </div>
 
-          <div className=' px-10 flex items-center gap-3'>
-            {
-              currentPath === '/bin' && data?.user?.email == fileOwner && <Button
-               onClick={() => handleFileRes(fileId)}>{isRestored ?
-                 <span className=' flex items-center gap-2'><Redo2/>Restored</span> 
-                 : <span>Restore</span>}</Button>
-            }
-
-            <Button onClick={() => handleShare(fileId)}><Share2/>{ copyStatus ?  <p>copied</p> : <p>Share</p>}</Button>
-            
-           <a href={downloadUrl}><Button><Download/>Download</Button></a>
-            {
-              addedToStarred ? <Button onClick={handleStarClk}><Star fill='yellow'/></Button> 
-              : <Button onClick={handleStarClk}><Star/></Button>
-            }
-          </div>
+      {/* Mobile menu toggle */}
+      <div className="sm:hidden flex justify-end">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setShowMobileActions(!showMobileActions)}
+          aria-label="Toggle actions menu"
+        >
+          {showMobileActions ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      </div>
+      
+      {/* Mobile actions menu */}
+      {showMobileActions && (
+        <div className="sm:hidden flex flex-col space-y-2 mb-4">
+          {data?.user?.email !== fileOwner && (
+            <Button 
+              className="w-full justify-start" 
+              onClick={() => {
+                addToSpace(fileId);
+                setShowMobileActions(false);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {!addedFileStatus ? 'Add To Space' : 'Added'}
+            </Button>
+          )}
+          
+          {currentPath === '/bin' && data?.user?.email === fileOwner && (
+            <Button 
+              className="w-full justify-start" 
+              onClick={() => {
+                handleFileRes(fileId);
+                setShowMobileActions(false);
+              }}
+            >
+              <Redo2 className="mr-2 h-4 w-4" />
+              {isRestored ? 'Restored' : 'Restore'}
+            </Button>
+          )}
+          
+          <Button 
+            className="w-full justify-start" 
+            onClick={() => {
+              handleShare(fileId);
+              setShowMobileActions(false);
+            }}
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            {copyStatus ? 'Copied' : 'Share'}
+          </Button>
+          
+          <a href={downloadUrl} className="block w-full">
+            <Button className="w-full justify-start">
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
+          </a>
+          
+          <Button 
+            className="w-full justify-start" 
+            onClick={() => {
+              handleStarClk();
+              setShowMobileActions(false);
+            }}
+          >
+            <Star className="mr-2 h-4 w-4" fill={addedToStarred ? 'yellow' : 'none'} />
+            {addedToStarred ? 'Unstar' : 'Star'}
+          </Button>
         </div>
+      )}
+
+      {/* Desktop actions */}
+      <div className="hidden sm:flex items-center gap-2">
+        {currentPath === '/bin' && data?.user?.email === fileOwner && (
+          <Button onClick={() => handleFileRes(fileId)}>
+            <Redo2 className="mr-1" />
+            {isRestored ? 'Restored' : 'Restore'}
+          </Button>
+        )}
+
+        <Button onClick={() => handleShare(fileId)}>
+          <Share2 className="mr-1" />
+          {copyStatus ? 'Copied' : 'Share'}
+        </Button>
+        
+        <a href={downloadUrl}>
+          <Button>
+            <Download className="mr-1" />
+            Download
+          </Button>
+        </a>
+        
+        <Button onClick={handleStarClk}>
+          <Star fill={addedToStarred ? 'yellow' : 'none'} />
+        </Button>
+      </div>
+    </div>
   )
 }
 
