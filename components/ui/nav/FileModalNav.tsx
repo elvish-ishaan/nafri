@@ -6,13 +6,12 @@ import { Download, Menu, Plus, Redo2, Share2, Star, X } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { addFileToSpace, addToStarred, fetchSignedUrl, restoreFile } from '@/app/actions/uploads'
 import { useSession } from 'next-auth/react'
-import { Popover, PopoverContent, PopoverTrigger } from '../popover'
 
 //refactor the whole props send filedetails as whole object and then
 //extract other info from it
 
-const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner, fileUrl}:
-  {fileKey: string, uploadDate: string, fileId: string, starred: boolean, fileOwner: string, fileUrl: string}) => {
+const FileModalNav = ({fileKey, uploadDate, fileId, starred, fileOwner}:
+  {fileKey: string, uploadDate: string, fileId: string, starred: boolean, fileOwner: string, fileUrl?: string}) => {
     const [addedToStarred, setAddedToStarred] = useState<boolean>(starred)
     const { toast } = useToast()
     const [copyStatus, setCopySatus] = useState<boolean>(false)
