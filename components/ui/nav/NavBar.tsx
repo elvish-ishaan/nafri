@@ -25,16 +25,6 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
           <Cloud className="h-6 w-6 sm:h-8 sm:w-8 hover:text-muted-foreground" />
         </div>
         
-        {/* Theme toggle visible on all screen sizes */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleTheme}
-          className="ml-auto md:ml-0"
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </Button>
         
         {/* Desktop-only nav links */}
         <div className="hidden md:flex gap-6 items-center">
@@ -50,8 +40,18 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
         </div>
         
         {/* Sign In button */}
-        <div className="hidden md:block ml-6">
-          <Button onClick={() => router.push('/auth/sign-in')}>Sign In</Button>
+        <div className="hidden ml-6 md:flex items-center md:gap-3">
+               {/* Theme toggle visible on all screen sizes */}
+               <Button 
+                   variant="ghost" 
+                   size="icon" 
+                   onClick={toggleTheme}
+                   className="ml-auto md:ml-0"
+                   aria-label="Toggle theme"
+                 >
+                   {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
+                <Button onClick={() => router.push('/auth/sign-in')}>Sign In</Button>
         </div>
 
         {/* Mobile menu button */}

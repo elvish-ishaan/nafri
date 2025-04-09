@@ -24,7 +24,7 @@ const DashNav = () => {
 
   return (
     <>
-      <div className='py-4 sm:py-8 flex items-center justify-between w-full px-4 sm:px-8'>
+      <div className='py-4 sm:py-8 flex items-center justify-between w-full px-4 sm:px-8 md:justify-end'>
         {/* Mobile menu toggle button - only visible on small screens */}
         <div className="flex md:hidden">
           <Button 
