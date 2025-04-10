@@ -42,9 +42,9 @@ const PricingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen text-white py-10 px-5">
+    <div className="min-h-screen text-foreground py-10 px-5">
       <h1 className="text-4xl font-bold text-center mb-8">Pricing Plans</h1>
-      <p className="text-center text-gray-400 mb-12">
+      <p className="text-center text-muted-foreground mb-12">
         Choose a plan that best fits your needs and start integrating our API today.
       </p>
 
@@ -55,10 +55,10 @@ const PricingPage = () => {
               <CardTitle className="text-2xl font-semibold text-center">
                 {plan.name}
               </CardTitle>
-              <p className="text-xl text-center text-gray-400 mt-2">{plan.price}</p>
+              <p className="text-xl text-center text-muted-foreground mt-2">{plan.price}</p>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-400 text-center mb-4">{plan.description}</p>
+              <p className="text-muted-foreground text-center mb-4">{plan.description}</p>
               <ul className="space-y-2">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center">

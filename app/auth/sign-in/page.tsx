@@ -68,8 +68,8 @@ function LoginPageContent() {
       >
         <div className="flex flex-col items-center justify-center w-full h-full bg-black bg-opacity-50">
           <Cloud size={100}/>
-          <h1 className="text-4xl font-bold text-white">Welcome</h1>
-          <p className="text-gray-400 text-center mt-2">
+          <h1 className="text-4xl font-bold text-primary-foreground">Welcome</h1>
+          <p className="text-muted-foreground text-center mt-2">
             Sign in to access your dashboard, manage your settings, and continue where you left off.
           </p>
         </div>

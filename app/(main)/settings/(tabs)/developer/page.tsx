@@ -96,13 +96,13 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 rounded-lg shadow-md text-white">
+    <div className="max-w-3xl mx-auto p-6 rounded-lg shadow-md text-foreground">
       <h2 className="text-2xl font-semibold mb-6">Developer Settings</h2>
 
       {/* API Key Generation Section */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold">Generate API Key</h3>
-        <p className="text-sm text-gray-400 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Generate a new API key to access your application programmatically.
         </p>
         <div className="flex space-x-4">
@@ -126,14 +126,14 @@ const Page: React.FC = () => {
             {apiKeys.map((apiKey) => (
               <div
                 key={apiKey.id}
-                className="flex justify-between items-center bg-gray-700 p-4 rounded-lg"
+                className="flex justify-between items-center bg-muted p-4 rounded-lg"
               >
                 <div className="flex items-center space-x-2">
-                  <Key size={20} className="text-gray-300" />
+                  <Key size={20} className="text-muted-foreground" />
                   <span className="text-sm">{apiKey.key}</span>
                 </div>
                 <div className="flex space-x-4 items-center">
-                  <span className="text-xs text-gray-400">{formatDate(apiKey.genDate)}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(apiKey.genDate)}</span>
                   <Button
                     variant="outline"
                     size="sm"
@@ -148,7 +148,7 @@ const Page: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400">No API keys generated yet.</p>
+          <p className="text-sm text-muted-foreground">No API keys generated yet.</p>
         )}
       </div>
     </div>

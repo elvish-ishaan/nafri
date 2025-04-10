@@ -2,7 +2,7 @@ import React from 'react';
 
 const PrivacyPolicy = () => {
   return (
-    <div className="p-6 rounded-lg text-white">
+    <div className="p-6 rounded-lg text-foreground">
       <h2 className="text-2xl font-semibold mb-4">Privacy Policy</h2>
 
       <h3 className="text-xl font-semibold mb-2">1. Introduction</h3>
@@ -56,7 +56,7 @@ const PrivacyPolicy = () => {
         We use cookies and similar technologies to enhance your experience on our web app. You can manage cookie preferences through your browser settings.
       </p>
 
-      <h3 className="text-xl font-semibold mb-2">8. Children’s Privacy</h3>
+      <h3 className="text-xl font-semibold mb-2">8. Children&apos;s Privacy</h3>
       <p>
         Our web app is not intended for use by individuals under the age of 13. We do not knowingly collect personal information from children. If we become aware that we have collected data from a child, we will delete it.
       </p>

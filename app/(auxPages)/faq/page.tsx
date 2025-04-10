@@ -63,13 +63,13 @@ const FaqPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-8 max-w-4xl">
-      <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">
+      <h1 className="text-4xl font-bold text-center mb-10 text-foreground">
         Frequently Asked Questions
       </h1>
       <Accordion
         type="single"
         collapsible
-        className="space-y-6 border rounded-lg shadow-lg p-6 bg-white"
+        className="space-y-6 border rounded-lg shadow-lg p-6 bg-card"
       >
         {faqData.map((faq, index) => (
           <AccordionItem
@@ -78,12 +78,12 @@ const FaqPage: React.FC = () => {
             className="border rounded-lg shadow-sm overflow-hidden"
           >
             <AccordionTrigger
-              className="flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 font-medium text-gray-800"
+              className="flex justify-between items-center px-4 py-3 bg-muted hover:bg-accent transition-colors duration-200 font-medium text-foreground"
             >
               <span>{faq.question}</span>
-              <ChevronDown className="ml-2 w-5 h-5 text-gray-600" />
+              <ChevronDown className="ml-2 w-5 h-5 text-muted-foreground" />
             </AccordionTrigger>
-            <AccordionContent className="px-4 py-3 text-gray-700 bg-gray-50">
+            <AccordionContent className="px-4 py-3 text-foreground bg-background">
               {faq.answer}
             </AccordionContent>
           </AccordionItem>

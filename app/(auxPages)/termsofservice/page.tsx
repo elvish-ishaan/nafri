@@ -2,7 +2,7 @@ import React from 'react';
 
 const page = () => {
   return (
-    <div className="p-6 rounded-lg text-white">
+    <div className="p-6 rounded-lg text-foreground">
       <h2 className="text-2xl font-semibold mb-4">Terms and Conditions</h2>
 
       <h3 className="text-xl font-semibold mb-2">1. Introduction</h3>

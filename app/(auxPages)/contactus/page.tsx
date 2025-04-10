@@ -24,13 +24,13 @@ export default function Contact() {
   }
 
   return (
-    <div className="text-gray-300 min-h-screen px-6 sm:px-12 lg:px-20">
+    <div className="text-foreground min-h-screen px-6 sm:px-12 lg:px-20">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-white mb-4">Contact Us</h1>
+          <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
           <p className="text-lg">
-            Have questions, feedback, or need assistance? Reach out to us, and we’ll be happy to help.
+            Have questions, feedback, or need assistance? Reach out to us, and we&apos;ll be happy to help.
           </p>
         </header>
 
@@ -39,11 +39,11 @@ export default function Contact() {
           {/* Contact Info */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold text-white mb-2">Our Office</h2>
+              <h2 className="text-2xl font-semibold mb-2">Our Office</h2>
               <p className="text-lg">Anantnag, Jammu and Kashmir, 192201</p>
             </div>
             <div>
-              <h2 className="text-2xl font-semibold text-white mb-2">Email Us</h2>
+              <h2 className="text-2xl font-semibold mb-2">Email Us</h2>
               <p className="text-lg">
                 <a
                   href="mailto:support@nextcloud.com"
@@ -56,7 +56,7 @@ export default function Contact() {
           </div>
 
           {/* Contact Form */}
-          <form onSubmit={handleSubmit} className="bg-gray-800 rounded-lg shadow-lg p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow-lg p-8 space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-2">
                 Name
@@ -65,7 +65,7 @@ export default function Contact() {
                 type="text"
                 id="name"
                 name="name"
-                className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg bg-muted border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Enter your name"
                 required
               />
@@ -78,7 +78,7 @@ export default function Contact() {
                 type="email"
                 id="email"
                 name="email"
-                className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg bg-muted border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Enter your email"
                 required
               />
@@ -91,14 +91,14 @@ export default function Contact() {
                 id="message"
                 name="message"
                 rows={4}
-                className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg bg-muted border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Write your message"
                 required
               ></textarea>
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition duration-300"
+              className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition duration-300"
             >
               Send Message
             </button>
@@ -107,8 +107,8 @@ export default function Contact() {
 
         {/* Footer Section */}
         <footer className="text-center mt-16">
-          <p className="text-sm text-gray-400">
-            We’ll respond to your inquiries as soon as possible. Thank you for reaching out!
+          <p className="text-sm text-muted-foreground">
+            We&apos;ll respond to your inquiries as soon as possible. Thank you for reaching out!
           </p>
         </footer>
       </div>

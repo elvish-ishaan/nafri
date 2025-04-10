@@ -4,9 +4,9 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const NafriDocs = () => {
   return (
-    <div className="flex h-screen text-white">
+    <div className="flex h-screen text-foreground">
       {/* Sidebar */}
-      <div className=" w-auto p-4 border-r border-gray-700">
+      <div className="w-auto p-4 border-r border-border">
         <h2 className="text-lg font-semibold mb-4">Topics</h2>
         <ul className="space-y-2 p-5">
           <li><a href="#initialization" className="hover:underline">Initialization</a></li>
@@ -20,16 +20,16 @@ const NafriDocs = () => {
       </div>
 
       {/* Main Content */}
-      <div className=" p-6 overflow-y-auto">
+      <div className="p-6 overflow-y-auto">
         <h1 className="text-2xl font-bold mb-6">Documentation</h1>
-        <p className=" text-muted-foreground">
+        <p className="text-muted-foreground">
           The <code>Nafri</code> class is a utility for handling file uploads, deletions,
           and listing files through an API. It requires a configuration object during
           initialization containing a <code>baseUrl</code> and an <code>apiKey</code>.
         </p>
 
         <h2 id="initialization" className="text-xl font-semibold mt-8 mb-4">Initialization</h2>
-        <p className=" text-muted-foreground">
+        <p className="text-muted-foreground">
           To initialize the <code>Nafri</code> class, provide a configuration object
           with <code>baseUrl</code> and <code>apiKey</code>. If these are missing, the
           class will throw an error.
@@ -44,7 +44,7 @@ const NafriDocs = () => {
         <h2 id="methods" className="text-xl font-semibold mt-8 mb-4">Methods</h2>
 
         <h3 id="uploadFile" className="text-lg font-semibold mt-6">uploadFile(file)</h3>
-        <p className=" text-muted-foreground">
+        <p className="text-muted-foreground">
           Uploads a file to the server. Throws an error if the file is not provided or
           if the upload fails.
         </p>
@@ -55,10 +55,10 @@ console.log(response);`}
         <ul>
           <li><strong>file</strong>: The file object to upload.</li>
         </ul>
-        <p className=" text-muted-foreground"><strong>Returns:</strong> An object containing the response from the server.</p>
+        <p className="text-muted-foreground"><strong>Returns:</strong> An object containing the response from the server.</p>
 
         <h3 id="deleteFile" className="text-lg font-semibold mt-6">deleteFile(fileId)</h3>
-        <p className=" text-muted-foreground">
+        <p className="text-muted-foreground">
           Deletes a file from the server using its file ID. Throws an error if the
           operation fails.
         </p>
@@ -69,10 +69,10 @@ console.log(response);`}
         <ul>
           <li><strong>fileId</strong>: The ID of the file to delete.</li>
         </ul>
-        <p className=" text-muted-foreground"><strong>Returns:</strong> An object containing the response from the server.</p>
+        <p className="text-muted-foreground"><strong>Returns:</strong> An object containing the response from the server.</p>
 
         <h3 id="listFiles" className="text-lg font-semibold mt-6">listFiles()</h3>
-        <p className=" text-muted-foreground">
+        <p className="text-muted-foreground">
           Retrieves a list of uploaded files from the server. Throws an error if the
           operation fails.
         </p>
@@ -80,7 +80,7 @@ console.log(response);`}
           {`const files = await nafri.listFiles();
 console.log(files);`}
         </SyntaxHighlighter>
-        <p className=" text-muted-foreground"><strong>Returns:</strong> An array of file objects.</p>
+        <p className="text-muted-foreground"><strong>Returns:</strong> An array of file objects.</p>
 
         <h2 id="exampleUsage" className="text-xl font-semibold mt-8 mb-4">Example Usage</h2>
         <SyntaxHighlighter language="javascript" style={vscDarkPlus}>

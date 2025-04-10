@@ -135,7 +135,7 @@ export default function PricingCards ({userStorage, setUserStorage}:{
   };
 
   return (
-    <div className="p-4 text-black rounded-xl shadow-md">
+    <div className="p-4 text-foreground rounded-xl shadow-md">
       <h1 className="text-3xl font-bold text-center mb-3 text-card-foreground">Pricing</h1>
       <p className="text-center text-muted-foreground mb-6">
         Choose the plan that fits your needs perfectly.
@@ -150,14 +150,14 @@ export default function PricingCards ({userStorage, setUserStorage}:{
               <CardTitle className="text-xl font-bold text-primary mb-1">
                 {plan.storage}
               </CardTitle>
-              <CardDescription className="text-gray-500 text-sm mb-3">
+              <CardDescription className="text-muted-foreground text-sm mb-3">
                 {plan.description}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-3">
               <div className="text-2xl font-extrabold my-5">{plan.price}</div>
               <Button
-                className="w-full bg-black hover:bg-gray-800 text-white text-sm py-2 rounded-xl transition-colors"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm py-2 rounded-xl transition-colors"
                 onClick={() => {
                   const amount = Number(plan.price.replace("₹", ""))
                   processPayment(plan.storage, amount);

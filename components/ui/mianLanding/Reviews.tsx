@@ -49,7 +49,7 @@ const reviews = [
 
 export default function Reviews() {
   return (
-    <section className="text-white py-16 px-4 sm:px-8 lg:px-16">
+    <section className="bg-card text-card-foreground py-16 px-4 sm:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-4xl font-bold text-center mb-12">What Our Users Say</h2>
         <div className="relative overflow-hidden">
@@ -57,11 +57,11 @@ export default function Reviews() {
             {reviews.map((review) => (
               <Card
                 key={review.id}
-                className="mx-4 w-[350px] bg-transparent border border-white/10 backdrop-blur-sm hover:border-white/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:scale-[1.02]"
+                className="mx-4 w-[350px] bg-secondary/50 border border-border backdrop-blur-sm hover:border-border/80 transition-all duration-300 hover:shadow-[0_0_30px_rgba(var(--ring),0.1)] hover:scale-[1.02]"
               >
                 <CardHeader className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                    <User className="w-6 h-6 text-white/70" />
+                  <div className="w-12 h-12 rounded-full bg-background/50 border border-border flex items-center justify-center">
+                    <User className="w-6 h-6 text-muted-foreground" />
                   </div>
                   <div>
                     <CardTitle className="text-lg font-semibold">{review.name}</CardTitle>
@@ -73,7 +73,7 @@ export default function Reviews() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-300">{review.review}</p>
+                  <p className="text-foreground">{review.review}</p>
                 </CardContent>
               </Card>
             ))}
