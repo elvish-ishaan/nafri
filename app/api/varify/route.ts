@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import prisma from '@/prisma/prismaClient';
 import { getServerSession } from 'next-auth';
 import { razorpay } from '@/lib/paymentConfig';
+import { sendEmail } from '@/lib/mailer';
 
 //util function GB -> Bytes
 function gbToBytes(gb: number): number {
@@ -67,6 +68,13 @@ export async function POST(request: NextRequest) {
  } catch (error) {
     console.log(error, 'error in updating user storage at varification')
  }
+ //send email to user
+ try {
+  await sendEmail(session?.user?.name || '', session?.user?.email || '', 'Storage Upgrade Confirmation', order.notes?.plan || '')
+ } catch (error) {
+  console.log(error, 'error in sending email at varification')
+ }
+
 
  return NextResponse.json(
   { message: 'payment verified successfully', isOk: true },
