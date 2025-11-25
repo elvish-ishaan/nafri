@@ -7,11 +7,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
+import { useSession } from 'next-auth/react'
 
 const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { theme, setTheme } = useTheme()
+  const {data: session} = useSession();
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -51,7 +53,20 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
                  >
                    {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </Button>
-                <Button onClick={() => router.push('/auth/sign-in')}>Sign In</Button>
+                {
+                session?.user ? <Button
+                className=' w-full'
+                onClick={() => router.push("/dashboard")}
+                >Dashboard</Button> : <Button 
+                className="w-full" 
+                onClick={() => {
+                  router.push('/auth/sign-in');
+                  setIsMenuOpen(false);
+                }}
+              >
+                Sign In
+              </Button>
+              }
         </div>
 
         {/* Mobile menu button */}
@@ -82,7 +97,11 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
               </Link>
             ))}
             <div className="pt-4">
-              <Button 
+              {
+                session?.user ? <Button
+                className=' w-full'
+                onClick={() => router.push("/dashboard")}
+                >Dashboard</Button> : <Button 
                 className="w-full" 
                 onClick={() => {
                   router.push('/auth/sign-in');
@@ -91,6 +110,7 @@ const NavBar = ({ extraClasses }: { extraClasses?: string }) => {
               >
                 Sign In
               </Button>
+              }
             </div>
           </div>
         </div>

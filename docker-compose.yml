@@ -1,0 +1,23 @@
+services:
+  # nafri:
+  #   image: elvishishaan/nafri:latest
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:randompassword@localhost:5432/postgres
+  #     - PORT=3000
+  #   depends_on:
+  #     - db
+  db:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - nafri-db-data:/var/lib/postgresql/data
+volumes:  
+  nafri-db-data:

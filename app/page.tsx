@@ -18,11 +18,11 @@ export default function Home() {
   const {data: session} = useSession()
   const router = useRouter()
 
-  useEffect(() => {
-    if (session?.user) {
-      router.push('/dashboard')
-    }
-  },[ session?.user, router])
+  // useEffect(() => {
+  //   if (session?.user) {
+  //     router.push('/dashboard')
+  //   }
+  // },[ session?.user, router])
 
   const scrollToFeatures = () => {
     featuresRef.current?.scrollIntoView({ behavior: "smooth" });

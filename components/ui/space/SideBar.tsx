@@ -68,10 +68,6 @@ export default function SideBar({ isMobile = false, onClose }: SideBarProps) {
      setIsUpgModelOpen(true)
   }
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
-  }
-
   return (
     <div className="flex h-screen flex-col text-foreground w-full md:w-64 border-foreground-muted md:border-r-2">
       {/* upgrade modal */}
@@ -131,25 +127,6 @@ export default function SideBar({ isMobile = false, onClose }: SideBarProps) {
 
       {/* Sidebar Footer */}
       <div className="px-4 py-4">
-        {/* Theme Toggle */}
-        <div className="mb-2">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center w-full px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            {theme === 'dark' ? (
-              <>
-                <Sun className="mr-3 h-5 w-5" />
-                <span>Light Mode</span>
-              </>
-            ) : (
-              <>
-                <Moon className="mr-3 h-5 w-5" />
-                <span>Dark Mode</span>
-              </>
-            )}
-          </button>
-        </div>
         <div>
           <Link 
             href="/settings" 
